@@ -323,11 +323,6 @@ body:has(.lesson-overlay),body:has(.ceremony-overlay){overflow:hidden}
 @media(prefers-reduced-motion:reduce){.welcome-sparkle{animation:none}}
 
 /* The long path traces two smooth arcs through each unit. Characters sit outside it. */
-.path-unit.curve-reverse .nodes-wrap>.owl{right:auto;left:17%;top:280px}
-.path-owl-lower{position:absolute;top:970px;left:16%;pointer-events:none;opacity:.72}
-.path-unit.curve-reverse .path-owl-lower{left:auto;right:17%}
-.path-owl-lower .owl{position:static}
-@media(max-width:700px){.path-unit.curve-reverse .nodes-wrap>.owl{left:0}.path-owl-lower{left:0;top:950px;transform:scale(.75)}.path-unit.curve-reverse .path-owl-lower{right:0}}
 
 /* Keep all four assignment progress counters visible without covering the unit card. */
 .topbar-items{gap:18px}
@@ -399,12 +394,23 @@ body:has(.lesson-overlay),body:has(.ceremony-overlay){overflow:hidden}
 .blocking-loader{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px}
 .blocking-loader .starting-bird{width:min(300px,65vw);height:min(300px,45dvh);aspect-ratio:auto}
 .welcome-card .welcome-mascot{width:min(230px,100%);height:min(230px,30dvh);aspect-ratio:auto;margin:0 auto 22px}
-.nodes-wrap>.path-learning-mascot{position:absolute;width:185px;height:185px;aspect-ratio:auto;right:17%;top:210px;pointer-events:none}
-.path-learning-mascot.dimmed{filter:grayscale(1);opacity:.4}
-.path-unit.curve-reverse .nodes-wrap>.path-learning-mascot{right:auto;left:15%;top:280px}
 .combo-interlude .challenge-mascot{width:280px;height:280px;aspect-ratio:auto}
 .hard-interlude .challenge-mascot{align-self:center}
-@media(max-width:700px){.nodes-wrap>.path-learning-mascot{width:128px;height:128px;right:0;top:168px}.path-unit.curve-reverse .nodes-wrap>.path-learning-mascot{left:0}.combo-interlude{flex-direction:column;gap:12px;padding:16px}.combo-interlude .challenge-mascot{width:210px;height:180px}.combo-interlude .combo-speech{max-width:100%;font-size:17px}.hard-interlude .combo-speech{margin-bottom:0;align-self:center}}
+@media(max-width:700px){.combo-interlude{flex-direction:column;gap:12px;padding:16px}.combo-interlude .challenge-mascot{width:210px;height:180px}.combo-interlude .combo-speech{max-width:100%;font-size:17px}.hard-interlude .combo-speech{margin-bottom:0;align-self:center}}
 @media(max-height:600px){.welcome-card{padding-top:18px;padding-bottom:20px}.welcome-card .welcome-mascot{height:110px;margin-bottom:12px}.welcome-card p{margin-bottom:18px}.combo-interlude .challenge-mascot{height:200px}}
 
 @media(max-width:700px){.combo-interlude .combo-speech:before{left:calc(50% - 12px);top:-13px;transform:rotate(135deg)}}
+
+/* Anchor mascots to actual lesson rows, on the open side of each curve. */
+.path-stop{position:relative;width:100%;display:flex;justify-content:center;align-items:center}
+.path-stop .path-mascot{position:absolute;top:50%;width:clamp(110px,28%,185px);height:auto;aspect-ratio:1;transform:translate(-50%,-50%);pointer-events:none}
+.path-mascot.on-right{left:76%}
+.path-mascot.on-left{left:24%}
+.path-mascot.dimmed{filter:grayscale(1);opacity:.55}
+.super-card .promo-mascot{position:absolute;right:14px;top:4px;width:170px;height:170px;aspect-ratio:auto;pointer-events:none}
+.super-card h3,.super-card p{max-width:calc(100% - 115px)}
+.ad-card .ad-mascot{width:230px;height:150px;aspect-ratio:auto;margin:0 auto 4px}
+.quest-hero .quest-mascot{width:190px;height:190px;aspect-ratio:auto;margin:-22px -10px 0 0}
+.ceremony-celebration .ceremony-bird{width:260px;height:240px;aspect-ratio:auto;position:relative;z-index:2}
+@media(min-width:1121px) and (max-width:1550px){.super-card .promo-mascot{width:135px;height:135px;right:7px}.super-card h3,.super-card p{max-width:calc(100% - 85px)}}
+@media(max-width:700px){.path-stop .path-mascot{width:120px;height:120px}.quest-hero .quest-mascot{width:120px;height:140px;margin:0;align-self:center}.quest-hero{height:auto;min-height:250px;padding:28px 20px;gap:8px}.quest-hero>div:first-child{min-width:0}.ceremony-celebration .ceremony-bird{width:200px;height:185px}}
