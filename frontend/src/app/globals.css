@@ -392,3 +392,19 @@ body:has(.lesson-overlay),body:has(.ceremony-overlay){overflow:hidden}
 .review-error button{background:none;border:0;color:var(--blue);font-weight:900}
 @media(max-width:700px){.review-modal{padding:40px 20px 24px}.review-modal h2{font-size:23px}.review-subtitle{font-size:16px;margin-bottom:24px}.review-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.review-close{margin:-29px -8px 0 0}.review-card:nth-last-child(-n+4) .review-solution{top:88px;bottom:auto}.review-card:nth-last-child(-n+2) .review-solution{top:auto;bottom:14px}}
 @media(prefers-reduced-motion:reduce){.lesson-character.junior .junior-motion,.lesson-character.junior .character-eyes,.lesson-character.junior.celebrating .character-arm,.lesson-character.junior.celebrating .character-head,.review-audio.playing{animation:none!important}.progress-burst{display:none}}
+
+.mascot-animation{position:relative;width:100%;aspect-ratio:1;flex:none;overflow:hidden;isolation:isolate}.mascot-canvas{position:absolute;inset:0;opacity:0}.mascot-canvas.ready{opacity:1}.mascot-canvas svg{display:block;width:100%;height:100%}.mascot-fallback{position:absolute;inset:0;display:grid;place-items:center;color:var(--green);font-size:60px}
+
+.loading-screen .loading-bird{width:min(360px,70vw);height:min(360px,42dvh);aspect-ratio:auto;margin:0 auto 8px}
+.blocking-loader{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px}
+.blocking-loader .starting-bird{width:min(300px,65vw);height:min(300px,45dvh);aspect-ratio:auto}
+.welcome-card .welcome-mascot{width:min(230px,100%);height:min(230px,30dvh);aspect-ratio:auto;margin:0 auto 22px}
+.nodes-wrap>.path-learning-mascot{position:absolute;width:185px;height:185px;aspect-ratio:auto;right:17%;top:210px;pointer-events:none}
+.path-learning-mascot.dimmed{filter:grayscale(1);opacity:.4}
+.path-unit.curve-reverse .nodes-wrap>.path-learning-mascot{right:auto;left:15%;top:280px}
+.combo-interlude .challenge-mascot{width:280px;height:280px;aspect-ratio:auto}
+.hard-interlude .challenge-mascot{align-self:center}
+@media(max-width:700px){.nodes-wrap>.path-learning-mascot{width:128px;height:128px;right:0;top:168px}.path-unit.curve-reverse .nodes-wrap>.path-learning-mascot{left:0}.combo-interlude{flex-direction:column;gap:12px;padding:16px}.combo-interlude .challenge-mascot{width:210px;height:180px}.combo-interlude .combo-speech{max-width:100%;font-size:17px}.hard-interlude .combo-speech{margin-bottom:0;align-self:center}}
+@media(max-height:600px){.welcome-card{padding-top:18px;padding-bottom:20px}.welcome-card .welcome-mascot{height:110px;margin-bottom:12px}.welcome-card p{margin-bottom:18px}.combo-interlude .challenge-mascot{height:200px}}
+
+@media(max-width:700px){.combo-interlude .combo-speech:before{left:calc(50% - 12px);top:-13px;transform:rotate(135deg)}}
