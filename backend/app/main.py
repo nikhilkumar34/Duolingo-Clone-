@@ -882,6 +882,32 @@ def answer(session_id: str, submitted: AnswerIn, x_learner_id: str = Header(...)
         return {"correct": correct, "correct_answer": expected, "explanation": exercise["explanation"], "hearts": user["hearts"], "complete": complete, "failed": failed, "xp_awarded": xp_awarded, "accuracy": accuracy, "streak": streak, "streak_advanced": streak_advanced}
 
 
+@app.get("/api/sessions/{session_id}/review")
+def review_lesson(session_id: str, x_learner_id: str = Header(...)):
+    with db() as connection:
+        user_id = learner(connection, x_learner_id)
+        session = connection.execute(
+            "SELECT s.*, l.title FROM lesson_sessions s JOIN lessons l ON l.id = s.lesson_id "
+            "WHERE s.id = ? AND s.user_id = ?", (session_id, user_id),
+        ).fetchone()
+        if not session:
+            raise HTTPException(404, "Lesson session not found")
+        if session["status"] == "active":
+            raise HTTPException(409, "Finish the lesson before reviewing it")
+        items = []
+        for row in connection.execute(
+            "SELECT e.id, e.sort_order, e.type, e.prompt, e.payload_json, e.answer_json AS correct_answer_json, "
+            "a.answer_json, a.is_correct FROM session_answers a JOIN exercises e ON e.id = a.exercise_id "
+            "WHERE a.session_id = ? ORDER BY e.sort_order", (session_id,),
+        ):
+            items.append({"id": row["id"], "sort_order": row["sort_order"], "type": row["type"],
+                          "prompt": row["prompt"], "payload": json.loads(row["payload_json"]),
+                          "answer": json.loads(row["answer_json"]),
+                          "correct_answer": json.loads(row["correct_answer_json"]),
+                          "correct": bool(row["is_correct"])})
+        return {"lesson_title": session["title"], "items": items}
+
+
 @app.post("/api/practice/refill")
 def practice_refill(x_learner_id: str = Header(...)):
     with db() as connection:

@@ -334,3 +334,61 @@ body:has(.lesson-overlay),body:has(.ceremony-overlay){overflow:hidden}
 .topbar-items button:nth-child(3){color:#4cc4f7}
 .topbar-items button:nth-child(4){color:var(--red)}
 @media(max-width:700px){.topbar-items{gap:2px}}
+
+/* Move selected words between their slots while keeping the bank layout stable. */
+.word-options button,.word-answer button{position:relative}
+.word-options button:disabled:not(.word-placeholder){color:var(--text);background:transparent;cursor:default}
+.word-options .word-placeholder{color:transparent;background:#394b54}
+.word-answer button:disabled{color:var(--text);cursor:default}
+.lesson-character.junior .junior-motion{transform-origin:65px 160px;animation:junior-idle 3s ease-in-out infinite}
+.lesson-character.junior .character-arm{transform-box:view-box;transform-origin:90px 105px;transform:rotate(24deg)}
+.lesson-character.junior .character-eyes{transform-box:fill-box;transform-origin:center;animation:junior-blink 5s infinite}
+.junior-cheer-mouth{display:none}
+.lesson-character.junior.celebrating{animation:none}
+.lesson-character.junior.celebrating .junior-motion{animation:junior-celebrate .8s cubic-bezier(.2,.75,.25,1) both}
+.lesson-character.junior.celebrating .character-arm{animation:junior-arm-cheer .75s ease-out both}
+.lesson-character.junior.celebrating .character-head{animation:junior-head-cheer .8s ease-out both}
+.lesson-character.junior.celebrating .junior-smile{display:none}
+.lesson-character.junior.celebrating .junior-cheer-mouth{display:block}
+@keyframes junior-idle{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(2deg) translateY(-2px)}}
+@keyframes junior-blink{0%,43%,48%,100%{transform:scaleY(1)}45%,46%{transform:scaleY(.12)}}
+@keyframes junior-celebrate{0%{transform:rotate(0)}35%{transform:translateY(-12px) rotate(-7deg)}65%{transform:translateY(-2px) rotate(3deg)}100%{transform:translateY(-3px) rotate(-3deg)}}
+@keyframes junior-arm-cheer{0%{transform:rotate(24deg)}40%{transform:rotate(-30deg)}65%{transform:rotate(-15deg)}100%{transform:rotate(-24deg)}}
+@keyframes junior-head-cheer{0%{transform:rotate(0)}45%{transform:rotate(-9deg)}100%{transform:rotate(-4deg)}}
+.progress-burst{position:absolute;top:50%;width:1px;height:1px;color:#9ce332;pointer-events:none}
+.progress-burst i{position:absolute;width:35px;height:35px;border:7px solid currentColor;border-radius:50%;transform:translate(-50%,-50%);animation:progress-ring .75s ease-out both}
+.progress-burst b{position:absolute;width:5px;height:5px;border-radius:50%;background:currentColor;animation:progress-spark .75s ease-out both;--spark-x:17px;--spark-y:-21px}
+.progress-burst b:nth-of-type(2){--spark-x:-14px;--spark-y:19px}
+.progress-burst b:nth-of-type(3){--spark-x:22px;--spark-y:15px}
+@keyframes progress-ring{0%{opacity:.7;transform:translate(-50%,-50%) scale(.2)}70%{opacity:.4}100%{opacity:0;transform:translate(-50%,-50%) scale(1.6)}}
+@keyframes progress-spark{0%{opacity:1;transform:translate(0,0)}100%{opacity:0;transform:translate(var(--spark-x),var(--spark-y))}}
+
+.ceremony-footer .duo-button.outline:not(:disabled){color:var(--blue)}
+.review-backdrop{position:fixed;inset:0;z-index:100;background:#061014c9;display:flex;align-items:center;justify-content:center;padding:18px}
+.review-modal{position:relative;width:min(808px,100%);max-height:calc(100dvh - 36px);overflow-y:auto;overscroll-behavior:contain;border-radius:18px;background:var(--bg);padding:48px 38px 38px;scrollbar-width:thin}
+.review-close{position:sticky;top:0;float:right;margin:-36px -24px 0 0;width:32px;height:32px;display:grid;place-items:center;background:#15262d;border:2px solid var(--line);border-radius:50%;color:var(--muted);z-index:5}
+.review-modal h2{text-align:center;font-size:27px;margin:4px 0 8px;padding:0 24px}
+.review-subtitle{text-align:center;font-size:19px;margin:0 0 32px;color:var(--text)}
+.review-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px}
+.review-card{position:relative;min-height:140px;border-radius:10px;background:#20313a;color:#82c92b}
+.review-card.incorrect{color:#ff7575}
+.review-card.expanded{z-index:3}
+.review-tile{display:flex;flex-direction:column;gap:15px;border:2px solid transparent;border-radius:10px;padding:13px 12px 16px;background:transparent;width:100%;min-height:140px;color:inherit;text-align:left;font-size:14px;font-weight:600}
+.review-card:has(.review-audio) .review-tile{padding-bottom:57px}
+.review-tile strong{font-size:14px;line-height:1.3;padding-right:21px}
+.review-tile:hover,.review-tile[aria-expanded=true]{border-color:#425862}
+.review-tile:focus-visible,.review-audio:focus-visible,.review-close:focus-visible{outline:3px solid var(--blue);outline-offset:3px}
+.review-prompt{line-height:1.4}
+.review-status{position:absolute;right:13px;top:13px;width:23px;height:23px;background:#14262d;border-radius:50%;display:grid;place-items:center}
+.review-audio{position:absolute;bottom:14px;left:calc(50% - 18px);height:36px;width:36px;display:grid;place-items:center;border:0;border-radius:50%;background:var(--blue);color:#14333e}
+.review-audio.playing{animation:heart-pulse .6s infinite}
+.review-solution{position:absolute;top:88px;left:8px;right:8px;z-index:4;padding:13px 11px;border:1px solid #3c515b;border-radius:14px;background:#142127;box-shadow:0 6px 20px #0004;color:var(--text);font-size:13px;overflow-wrap:anywhere}
+.review-solution:before{content:"";position:absolute;top:-7px;left:calc(50% - 6px);width:12px;height:12px;background:#142127;border-top:1px solid #3c515b;border-left:1px solid #3c515b;transform:rotate(45deg)}
+.review-solution>strong{font-size:10px;color:#8dd5f1}
+.review-solution p{margin:3px 0 17px;line-height:1.35}
+.review-solution p:last-child{margin-bottom:0}
+.review-card:nth-last-child(-n+4) .review-solution{top:auto;bottom:14px}
+.review-error{text-align:center;color:#ff7575}
+.review-error button{background:none;border:0;color:var(--blue);font-weight:900}
+@media(max-width:700px){.review-modal{padding:40px 20px 24px}.review-modal h2{font-size:23px}.review-subtitle{font-size:16px;margin-bottom:24px}.review-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.review-close{margin:-29px -8px 0 0}.review-card:nth-last-child(-n+4) .review-solution{top:88px;bottom:auto}.review-card:nth-last-child(-n+2) .review-solution{top:auto;bottom:14px}}
+@media(prefers-reduced-motion:reduce){.lesson-character.junior .junior-motion,.lesson-character.junior .character-eyes,.lesson-character.junior.celebrating .character-arm,.lesson-character.junior.celebrating .character-head,.review-audio.playing{animation:none!important}.progress-burst{display:none}}

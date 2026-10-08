@@ -12,6 +12,8 @@ export type Bootstrap = { user: User; units: Unit[]; leaderboard: Leader[] };
 export type Exercise = { id: number; sort_order: number; type: "choice" | "word_bank" | "match" | "fill_blank" | "type"; prompt: string; payload: Record<string, unknown> };
 export type LessonStart = { session_id: string; exercises: Exercise[]; hearts: number };
 export type AnswerResult = { correct: boolean; correct_answer: unknown; explanation: string; hearts: number; complete: boolean; failed: boolean; xp_awarded: number; accuracy: number; streak: number; streak_advanced: boolean };
+export type ReviewItem = Exercise & { answer: unknown; correct_answer: unknown; correct: boolean };
+export type LessonReview = { lesson_title: string; items: ReviewItem[] };
 
 const base = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 const learnerKey = "lingopath-learner-id";

@@ -9,6 +9,35 @@ from app import main
 
 
 class LessonFlowTest(unittest.TestCase):
+    def test_review_shows_saved_responses_and_solutions_without_changing_rewards(self):
+        started = main.start_lesson(1, x_learner_id=self.learner_id)
+        with main.db() as connection:
+            answers = [main.json.loads(row[0]) for row in connection.execute(
+                "SELECT answer_json FROM exercises WHERE lesson_id = 1 AND is_active = 1 ORDER BY sort_order"
+            )]
+        submitted = ["perro", None, *answers[2:]]
+        for exercise, response in zip(started["exercises"], submitted):
+            main.answer(started["session_id"], main.AnswerIn(exercise_id=exercise["id"], answer=response), x_learner_id=self.learner_id)
+        before = main.bootstrap(x_learner_id=self.learner_id)["user"]
+        review = main.review_lesson(started["session_id"], x_learner_id=self.learner_id)
+        self.assertEqual(len(review["items"]), 12)
+        self.assertEqual(review["items"][0]["answer"], "perro")
+        self.assertEqual(review["items"][0]["correct_answer"], "gato")
+        self.assertFalse(review["items"][0]["correct"])
+        self.assertIsNone(review["items"][1]["answer"])
+        self.assertTrue(review["items"][2]["correct"])
+        self.assertEqual([item["sort_order"] for item in review["items"]], list(range(1, 13)))
+        self.assertEqual(main.bootstrap(x_learner_id=self.learner_id)["user"], before)
+        with self.assertRaises(main.HTTPException) as denied:
+            main.review_lesson(started["session_id"], x_learner_id=str(uuid4()))
+        self.assertEqual(denied.exception.status_code, 404)
+
+    def test_review_requires_a_finished_lesson(self):
+        started = main.start_lesson(1, x_learner_id=self.learner_id)
+        with self.assertRaises(main.HTTPException) as pending:
+            main.review_lesson(started["session_id"], x_learner_id=self.learner_id)
+        self.assertEqual(pending.exception.status_code, 409)
+
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory(dir=Path(__file__).parent)
         self.original_path = main.DB_PATH
