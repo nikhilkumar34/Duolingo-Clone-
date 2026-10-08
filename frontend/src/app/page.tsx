@@ -347,7 +347,6 @@ export default function HomePage() {
   <div className="topbar-items">
     <button className={popover === "language" ? "selected" : ""} onClick={() => setPopover(popover === "language" ? null : "language")}><span className="spain-flag" /> 1</button>
     <button className={popover === "streak" ? "selected" : ""} onClick={() => setPopover(popover === "streak" ? null : "streak")}><Flame className="fire" fill="currentColor" /> {data.user.streak}</button>
-    <button className="xp-stat" onClick={() => { setPopover(null); setPage("profile"); }} aria-label={`${data.user.xp} total XP`}><Zap fill="currentColor" /> {data.user.xp}</button>
     <button className={popover === "gems" ? "selected" : ""} onClick={() => setPopover(popover === "gems" ? null : "gems")}><span className="gem-icon" /> {data.user.gems}</button>
     <button className={popover === "hearts" ? "selected" : ""} onClick={() => setPopover(popover === "hearts" ? null : "hearts")}><Heart className="hearts" fill="currentColor" /> {data.user.hearts}</button>
   </div>
