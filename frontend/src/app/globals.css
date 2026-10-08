@@ -347,7 +347,7 @@ body:has(.lesson-overlay),body:has(.ceremony-overlay){overflow:hidden}
 .topbar-items{width:460px;justify-content:space-between;gap:0}
 .topbar-items button{min-height:54px;gap:14px}
 .topbar-items button:first-child{min-width:100px;justify-content:center}
-.stat-popover.anchored-popover{position:absolute;left:var(--popover-left);right:auto!important;top:var(--popover-top);width:var(--popover-width)!important;max-height:none;padding:0;overflow:visible;box-shadow:none;border-radius:20px;background:var(--bg)}
+.stat-popover.anchored-popover{--popover-scale:1;position:absolute;left:var(--popover-left);right:auto!important;top:var(--popover-top);width:var(--popover-width)!important;max-height:none;padding:0;overflow:visible;box-shadow:none;border-radius:20px;background:var(--bg);transform:scale(var(--popover-scale));transform-origin:top left}
 .anchored-popover::before{content:"";position:absolute;left:var(--popover-arrow);top:-9px;width:16px;height:16px;transform:translateX(-50%) rotate(45deg);background:var(--bg);border-left:2px solid var(--line);border-top:2px solid var(--line);z-index:1}
 .anchored-popover.streak::before{background:#cf7d00}
 .stat-popover-content{overflow:hidden;border-radius:18px;padding:24px}
@@ -380,7 +380,7 @@ body:has(.lesson-overlay),body:has(.ceremony-overlay){overflow:hidden}
 .stat-popover.streak .streak-society p{font-size:20px;font-weight:600;line-height:1.5;color:#d2dfe3;margin:10px 0 0}
 .stat-popover.streak .streak-popover-bottom>.duo-button{width:100%;height:54px;margin:0;font-size:17px;border-radius:15px;letter-spacing:.8px;box-shadow:0 5px #1899c6}
 @media(min-width:1551px){.topbar-items button{justify-content:center}.topbar-items button:nth-child(2){min-width:84px}.topbar-items button:nth-child(3){min-width:100px}.topbar-items button:nth-child(4){min-width:90px}}
-@media(min-width:1121px) and (max-width:1550px){.topbar{height:96px}.topbar-items{width:368px}.topbar-items button{min-height:44px;gap:10px}.topbar-items button:first-child{min-width:81px}}
+@media(min-width:1121px) and (max-width:1550px){.topbar{height:96px}.topbar-items{width:368px}.topbar-items button{min-height:44px;gap:10px}.topbar-items button:first-child{min-width:81px}.stat-popover.anchored-popover{--popover-scale:.8}}
 @media(max-width:1120px){.topbar-items{width:460px;max-width:100%}}
 @media(max-width:700px){
   .topbar{height:70px}.topbar-items{width:auto;gap:0}.topbar-items button{min-height:44px;gap:7px}.topbar-items button:first-child{min-width:0}
@@ -392,6 +392,36 @@ body:has(.lesson-overlay),body:has(.ceremony-overlay){overflow:hidden}
   .friend-streak strong,.streak-society strong{font-size:18px}.stat-popover.streak .friend-streak p{font-size:15px}
   .stat-popover.streak .streak-society{padding:18px;gap:20px}.streak-society>img{width:46px}.stat-popover.streak .streak-society p{font-size:17px}
 }
+
+/* The compact gems and hearts panels use the same artwork and row proportions. */
+.stat-popover.gems .stat-popover-content{padding:24px;min-height:184px;display:flex;align-items:center}
+.gem-balance{display:flex;align-items:center;gap:6px;width:100%}
+.gem-balance>img{width:125px;height:136px;object-fit:contain;flex:none}
+.gem-balance>div{flex:1;min-width:0}
+.stat-popover.gems h2{font-size:28px;font-weight:800;margin:0 0 12px;line-height:1.2}
+.stat-popover.gems p{font-size:20px;line-height:1.4;margin:0 0 12px;font-weight:600}
+.stat-popover.gems button{display:block;padding:0;margin:0;font-size:17px;letter-spacing:.8px;line-height:1.3}
+.stat-popover.hearts .stat-popover-content{padding:30px 24px 28px}
+.stat-popover.hearts h2{font-size:30px;font-weight:800;line-height:36px;margin:0 0 24px}
+.stat-popover.hearts .five-hearts{gap:16px;height:32px;margin:0 0 26px;align-items:center}
+.detail-heart{position:relative;display:flex;color:var(--red)}
+.stat-popover.hearts .five-hearts svg{width:34px;height:32px}
+.detail-heart.filled::after{content:"";position:absolute;left:7px;top:6px;width:8px;height:8px;background:#ff8b8b;border-radius:50%;pointer-events:none}
+.stat-popover.hearts h3{font-size:23px;font-weight:800;line-height:30px;margin:0 0 15px}
+.stat-popover.hearts p{font-size:20px;font-weight:600;line-height:27px;margin:0 0 24px}
+.heart-actions{display:flex;flex-direction:column;gap:14px}
+.stat-popover.hearts .heart-action{display:flex;align-items:center;gap:16px;width:100%;height:64px;min-height:64px;padding:0 24px;margin:0;border:2px solid var(--line);border-radius:20px;color:#dbe4e8;text-align:left;background:none;font-size:17px}
+.heart-action strong{font-size:17px;font-weight:900;flex:1;white-space:nowrap}
+.heart-action>svg,.unlimited-heart{width:34px;height:34px;flex:none}
+.unlimited-heart{position:relative;display:grid;place-items:center;font-size:42px;line-height:1;background:linear-gradient(#1ee28e 15%,#22bfe5 55%,#af5bff 85%);background-clip:text;color:transparent}
+.unlimited-heart b{position:absolute;inset:0;display:grid;place-items:center;font-size:27px;color:white}
+.heart-action .free-trial{color:#ed19d5;font-size:16px;font-weight:800;white-space:nowrap}
+.heart-action .heart-cost{display:flex;align-items:center;gap:7px;color:#a9adaf;font-size:18px;flex:none}
+.heart-cost .gem-icon{width:19px;height:23px;background:#a9adaf}
+.refill-heart{color:#e4e8e9;stroke:#e4e8e9;stroke-width:1.5;padding:3px}
+.heart-action .practice-heart{width:26px;height:26px;margin:0 4px}
+.heart-action:hover{background:#202f36!important}
+@media(max-width:700px){.gem-balance{gap:18px}.gem-balance>img{width:85px}.stat-popover.hearts .stat-popover-content{padding:26px 16px}.stat-popover.hearts .heart-action{padding:0 14px;gap:10px}.heart-action strong{font-size:14px}.heart-action .free-trial{font-size:13px}}
 
 /* Move selected words between their slots while keeping the bank layout stable. */
 .word-options button,.word-answer button{position:relative}
