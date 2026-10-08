@@ -587,6 +587,55 @@ def sync_third_lesson_reference(connection: sqlite3.Connection) -> None:
     connection.execute("UPDATE exercises SET is_active = 0 WHERE lesson_id = 22 AND sort_order > 12")
 
 
+def sync_fourth_lesson_reference(connection: sqlite3.Connection) -> None:
+    """Keep Unit 1, Lesson 4 as a complete food-ordering lesson."""
+    def picture(word: str, choices: list[tuple[str, str]], answer: str):
+        return ("choice", f"Which one of these is “{word}”?",
+                {"choices": [{"label": label, "emoji": emoji} for label, emoji in choices], "tag": "NEW WORD"},
+                answer, f"{answer} means {word}.")
+
+    def meaning(word: str, choices: list[str], answer: str):
+        return ("choice", "Select the correct meaning",
+                {"mode": "meaning", "phrase": word, "choices": [{"label": choice} for choice in choices]},
+                answer, f"{answer} means {word}.")
+
+    pairs = [["bread", "pan"], ["sandwich", "sándwich"], ["ice cream", "helado"], ["juice", "jugo"], ["tea", "té"]]
+    rows = [
+        picture("bread", [("pan", "🥖"), ("helado", "🍦"), ("jugo", "🧃")], "pan"),
+        picture("sandwich", [("té", "🍵"), ("sándwich", "🥪"), ("pan", "🥖")], "sándwich"),
+        picture("ice cream", [("jugo", "🧃"), ("helado", "🍦"), ("sándwich", "🥪")], "helado"),
+        ("match", "Select the matching pairs", {"pairs": pairs,
+         "right_order": ["jugo", "pan", "té", "helado", "sándwich"]}, pairs, "Correct!"),
+        meaning("sandwich", ["pan", "sándwich", "helado"], "sándwich"),
+        ("word_bank", "Write this in English", {"phrase": "Un sándwich, por favor.",
+         "words": ["a", "sandwich", "please", "bread"]}, ["a", "sandwich", "please"], "Un sándwich means a sandwich."),
+        picture("juice", [("jugo", "🧃"), ("café", "☕"), ("leche", "🥛")], "jugo"),
+        meaning("ice cream", ["jugo", "helado", "pan"], "helado"),
+        ("word_bank", "Write this in English", {"phrase": "Quiero un jugo.",
+         "words": ["I", "want", "a", "juice", "coffee"]}, ["I", "want", "a", "juice"], "Quiero un jugo means I want a juice."),
+        ("match", "Select the matching pairs", {"pairs": [["bread", "pan"], ["sandwich", "sándwich"],
+         ["ice cream", "helado"], ["juice", "jugo"]], "right_order": ["helado", "pan", "jugo", "sándwich"]},
+         [["bread", "pan"], ["sandwich", "sándwich"], ["ice cream", "helado"], ["juice", "jugo"]], "Nice!"),
+        meaning("juice", ["jugo", "café", "té"], "jugo"),
+        ("word_bank", "Write this in English", {"phrase": "La cuenta, por favor.",
+         "words": ["the", "bill", "please", "menu"]}, ["the", "bill", "please"], "La cuenta means the bill."),
+    ]
+    rows[0][2]["reference_lesson"] = True
+    for order, (kind, prompt, payload, expected, explanation) in enumerate(rows, 1):
+        updated = connection.execute(
+            "UPDATE exercises SET type = ?, prompt = ?, payload_json = ?, answer_json = ?, explanation = ?, is_active = 1 "
+            "WHERE lesson_id = 23 AND sort_order = ?",
+            (kind, prompt, json.dumps(payload, ensure_ascii=False), json.dumps(expected, ensure_ascii=False), explanation, order),
+        )
+        if updated.rowcount == 0:
+            connection.execute(
+                "INSERT INTO exercises (lesson_id, sort_order, type, prompt, payload_json, answer_json, explanation, is_active) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, 1)",
+                (23, order, kind, prompt, json.dumps(payload, ensure_ascii=False), json.dumps(expected, ensure_ascii=False), explanation),
+            )
+    connection.execute("UPDATE exercises SET is_active = 0 WHERE lesson_id = 23 AND sort_order > 12")
+
+
 def migrate_schema(connection: sqlite3.Connection) -> None:
     if "is_active" not in {row[1] for row in connection.execute("PRAGMA table_info(exercises)")}:
         connection.execute("ALTER TABLE exercises ADD COLUMN is_active INTEGER NOT NULL DEFAULT 1")
@@ -603,6 +652,7 @@ with db() as connection:
     sync_first_lesson_reference(connection)
     sync_second_lesson_reference(connection)
     sync_third_lesson_reference(connection)
+    sync_fourth_lesson_reference(connection)
 
 
 def learner(connection: sqlite3.Connection, client_id: str) -> int:
