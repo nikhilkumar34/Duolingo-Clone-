@@ -526,3 +526,9 @@ body:has(.lesson-overlay),body:has(.ceremony-overlay){overflow:hidden}
 
 /* Enlarge the supplied bird inside its transparent canvas, retaining clearance. */
 .path-flying .mascot-canvas,.ad-card .ad-mascot .mascot-canvas{transform:translateY(16%) scale(2);transform-origin:center}
+
+/* Match the gentle two-second START callout motion on the active lesson. */
+.path-item.available .path-tooltip{--start-bob-distance:5px;animation:path-start-bob 2s ease-in-out infinite;will-change:transform}
+@keyframes path-start-bob{0%,100%{transform:translateY(calc(-1 * var(--start-bob-distance)))}50%{transform:translateY(var(--start-bob-distance))}}
+@media(min-width:1121px) and (max-width:1550px){.path-item.available .path-tooltip{--start-bob-distance:4px}}
+@media(prefers-reduced-motion:reduce){.path-item.available .path-tooltip{animation:none;transform:none;will-change:auto}}
