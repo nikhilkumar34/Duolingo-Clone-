@@ -49,6 +49,8 @@ class LessonFlowTest(unittest.TestCase):
             main.sync_reference_path(connection)
             main.sync_first_lesson_reference(connection)
             main.sync_second_lesson_reference(connection)
+            main.sync_third_lesson_reference(connection)
+            main.sync_fourth_lesson_reference(connection)
 
     def tearDown(self):
         main.DB_PATH = self.original_path
@@ -106,6 +108,44 @@ class LessonFlowTest(unittest.TestCase):
         ])
         self.assertEqual(started["exercises"][5]["payload"]["phrase"], "Mi maleta.")
         self.assertEqual(started["exercises"][-1]["payload"]["pairs"][0], ["my house", "mi casa"])
+
+    def test_captured_lessons_three_and_four_complete_and_review(self):
+        main.bootstrap(x_learner_id=self.learner_id)
+        with main.db() as connection:
+            user_id = connection.execute("SELECT id FROM users WHERE client_id = ?", (self.learner_id,)).fetchone()[0]
+            for skill_id in [1, 2]:
+                connection.execute("INSERT INTO skill_progress VALUES (?, ?, 1, ?)", (user_id, skill_id, main.now().isoformat()))
+        for lesson_id, count in [(22, 13), (23, 15)]:
+            started = main.start_lesson(lesson_id, x_learner_id=self.learner_id)
+            self.assertEqual(len(started["exercises"]), count)
+            with main.db() as connection:
+                expected = [main.json.loads(row[0]) for row in connection.execute(
+                    "SELECT answer_json FROM exercises WHERE lesson_id = ? AND is_active = 1 ORDER BY sort_order", (lesson_id,))]
+            if lesson_id == 22:
+                self.assertEqual(started["exercises"][0]["prompt"], "Which one of these is “green”?")
+                self.assertEqual(started["exercises"][2]["payload"]["words"], ["dog", "is", "My", "green", "big", "blue"])
+                self.assertEqual(started["exercises"][9]["payload"]["right_order"], ["azul", "leche", "grande", "mamá", "agua"])
+            else:
+                self.assertEqual(started["exercises"][0]["payload"]["combo_interludes"], [])
+                self.assertEqual(started["exercises"][0]["payload"]["hard_interlude_before"], 13)
+                self.assertEqual(started["exercises"][11]["payload"]["mode"], "chat")
+                self.assertEqual(started["exercises"][11]["payload"]["phrase"], "¿Un café?")
+                self.assertTrue(all(exercise["payload"]["tag"] == "HARD EXERCISE" for exercise in started["exercises"][-3:]))
+            for exercise, response in zip(started["exercises"], expected):
+                result = main.answer(started["session_id"], main.AnswerIn(exercise_id=exercise["id"], answer=response), x_learner_id=self.learner_id)
+                self.assertTrue(result["correct"])
+            self.assertTrue(result["complete"])
+            self.assertEqual(result["accuracy"], 100)
+            review = main.review_lesson(started["session_id"], x_learner_id=self.learner_id)
+            self.assertEqual(len(review["items"]), count)
+            self.assertEqual([item["correct_answer"] for item in review["items"]], expected)
+        with main.db() as connection:
+            before = [tuple(row) for row in connection.execute("SELECT * FROM exercises WHERE lesson_id IN (22,23) ORDER BY id")]
+            progress = [tuple(row) for row in connection.execute("SELECT * FROM skill_progress WHERE user_id = ?", (user_id,))]
+            main.sync_third_lesson_reference(connection)
+            main.sync_fourth_lesson_reference(connection)
+            self.assertEqual([tuple(row) for row in connection.execute("SELECT * FROM exercises WHERE lesson_id IN (22,23) ORDER BY id")], before)
+            self.assertEqual([tuple(row) for row in connection.execute("SELECT * FROM skill_progress WHERE user_id = ?", (user_id,))], progress)
 
     def test_path_lessons_unlock_in_display_order(self):
         for lesson_id, next_skill_id in [(1, 2), (2, 22), (22, 23), (23, 41), (41, 42)]:

@@ -538,102 +538,44 @@ def sync_second_lesson_reference(connection: sqlite3.Connection) -> None:
     connection.execute("UPDATE exercises SET is_active = 0 WHERE lesson_id = 2 AND sort_order > 12")
 
 
-def sync_third_lesson_reference(connection: sqlite3.Connection) -> None:
-    """Keep Unit 1, Lesson 3 as a complete café vocabulary lesson."""
-    def picture(word: str, choices: list[tuple[str, str]], answer: str):
-        return ("choice", f"Which one of these is “{word}”?",
-                {"choices": [{"label": label, "emoji": emoji} for label, emoji in choices], "tag": "NEW WORD"},
-                answer, f"{answer} means {word}.")
-
-    def meaning(word: str, choices: list[str], answer: str):
-        return ("choice", "Select the correct meaning",
-                {"mode": "meaning", "phrase": word, "choices": [{"label": choice} for choice in choices]},
-                answer, f"{answer} means {word}.")
-
-    pairs = [["tea", "té"], ["bread", "pan"], ["coffee", "café"], ["milk", "leche"], ["water", "agua"]]
-    rows = [
-        picture("tea", [("té", "🍵"), ("pan", "🥖"), ("agua", "💧")], "té"),
-        picture("bread", [("café", "☕"), ("pan", "🥖"), ("leche", "🥛")], "pan"),
-        picture("coffee", [("agua", "💧"), ("café", "☕"), ("té", "🍵")], "café"),
-        ("match", "Select the matching pairs", {"pairs": pairs,
-         "right_order": ["pan", "agua", "té", "leche", "café"]}, pairs, "Correct!"),
-        meaning("tea", ["té", "café", "pan"], "té"),
-        ("word_bank", "Write this in English", {"phrase": "Un té, por favor.",
-         "words": ["a", "tea", "please", "coffee"]}, ["a", "tea", "please"], "Un té means a tea."),
-        picture("ice", [("hielo", "🧊"), ("azúcar", "🍬"), ("leche", "🥛")], "hielo"),
-        meaning("bread", ["café", "pan", "hielo"], "pan"),
-        ("word_bank", "Write this in English", {"phrase": "Un café, por favor.",
-         "words": ["a", "coffee", "please", "tea"]}, ["a", "coffee", "please"], "Un café means a coffee."),
-        ("match", "Select the matching pairs", {"pairs": [["tea", "té"], ["coffee", "café"],
-         ["ice", "hielo"], ["bread", "pan"]], "right_order": ["café", "hielo", "pan", "té"]},
-         [["tea", "té"], ["coffee", "café"], ["ice", "hielo"], ["bread", "pan"]], "Nice!"),
-        meaning("ice", ["hielo", "leche", "agua"], "hielo"),
-        ("word_bank", "Write this in English", {"phrase": "Quiero un pan.",
-         "words": ["I", "want", "a", "bread", "coffee"]}, ["I", "want", "a", "bread"], "Quiero un pan means I want a bread."),
-    ]
-    rows[0][2]["reference_lesson"] = True
-    for order, (kind, prompt, payload, expected, explanation) in enumerate(rows, 1):
+def sync_observed_lesson(connection: sqlite3.Connection, number: int, lesson_id: int, title: str) -> None:
+    """Apply the captured sequence while preserving exercise IDs and learner progress."""
+    reference = json.loads((Path(__file__).parent / "references" / "duolingo-unit1-lessons-3-4.json").read_text(encoding="utf-8"))
+    rows = reference["lessons"][str(number)]
+    pictures = reference["artwork"]
+    fallback = {"libro": "📖", "verde": "🟢", "mamá": "👩‍🍼"}
+    connection.execute("UPDATE skills SET title = ? WHERE id = ?", (title, lesson_id))
+    connection.execute("UPDATE lessons SET title = ? WHERE id = ?", (title, lesson_id))
+    for order, row in enumerate(rows, 1):
+        payload = {key: value for key, value in row.items() if key not in {"type", "prompt", "answer"}}
+        if row["type"] == "choice":
+            payload["choices"] = [{"label": label, **({"image": pictures[label]} if label in pictures and not row.get("mode") else {}),
+                                   **({"emoji": fallback[label]} if label in fallback and not row.get("mode") else {})}
+                                  for label in row["choices"]]
+        if order == 1:
+            payload.update(reference_lesson=True, combo_interludes=[5, 10] if number == 3 else [])
+            if number == 4:
+                payload.update(hard_interlude_before=13, hard_interlude_message="Great work! Let's make this a bit harder...")
+        expected = row.get("answer", row.get("pairs"))
+        explanation = " ".join(expected) if row["type"] == "word_bank" else "Correct!" if row["type"] == "match" else expected
+        values = (row["type"], row["prompt"], json.dumps(payload, ensure_ascii=False),
+                  json.dumps(expected, ensure_ascii=False), explanation)
         updated = connection.execute(
             "UPDATE exercises SET type = ?, prompt = ?, payload_json = ?, answer_json = ?, explanation = ?, is_active = 1 "
-            "WHERE lesson_id = 22 AND sort_order = ?",
-            (kind, prompt, json.dumps(payload, ensure_ascii=False), json.dumps(expected, ensure_ascii=False), explanation, order),
-        )
+            "WHERE lesson_id = ? AND sort_order = ?", (*values, lesson_id, order))
         if updated.rowcount == 0:
             connection.execute(
                 "INSERT INTO exercises (lesson_id, sort_order, type, prompt, payload_json, answer_json, explanation, is_active) "
-                "VALUES (?, ?, ?, ?, ?, ?, ?, 1)",
-                (22, order, kind, prompt, json.dumps(payload, ensure_ascii=False), json.dumps(expected, ensure_ascii=False), explanation),
-            )
-    connection.execute("UPDATE exercises SET is_active = 0 WHERE lesson_id = 22 AND sort_order > 12")
+                "VALUES (?, ?, ?, ?, ?, ?, ?, 1)", (lesson_id, order, *values))
+    connection.execute("UPDATE exercises SET is_active = 0 WHERE lesson_id = ? AND sort_order > ?", (lesson_id, len(rows)))
+
+
+def sync_third_lesson_reference(connection: sqlite3.Connection) -> None:
+    sync_observed_lesson(connection, 3, 22, "Describe colors and size")
 
 
 def sync_fourth_lesson_reference(connection: sqlite3.Connection) -> None:
-    """Keep Unit 1, Lesson 4 as a complete food-ordering lesson."""
-    def picture(word: str, choices: list[tuple[str, str]], answer: str):
-        return ("choice", f"Which one of these is “{word}”?",
-                {"choices": [{"label": label, "emoji": emoji} for label, emoji in choices], "tag": "NEW WORD"},
-                answer, f"{answer} means {word}.")
-
-    def meaning(word: str, choices: list[str], answer: str):
-        return ("choice", "Select the correct meaning",
-                {"mode": "meaning", "phrase": word, "choices": [{"label": choice} for choice in choices]},
-                answer, f"{answer} means {word}.")
-
-    pairs = [["bread", "pan"], ["sandwich", "sándwich"], ["ice cream", "helado"], ["juice", "jugo"], ["tea", "té"]]
-    rows = [
-        picture("bread", [("pan", "🥖"), ("helado", "🍦"), ("jugo", "🧃")], "pan"),
-        picture("sandwich", [("té", "🍵"), ("sándwich", "🥪"), ("pan", "🥖")], "sándwich"),
-        picture("ice cream", [("jugo", "🧃"), ("helado", "🍦"), ("sándwich", "🥪")], "helado"),
-        ("match", "Select the matching pairs", {"pairs": pairs,
-         "right_order": ["jugo", "pan", "té", "helado", "sándwich"]}, pairs, "Correct!"),
-        meaning("sandwich", ["pan", "sándwich", "helado"], "sándwich"),
-        ("word_bank", "Write this in English", {"phrase": "Un sándwich, por favor.",
-         "words": ["a", "sandwich", "please", "bread"]}, ["a", "sandwich", "please"], "Un sándwich means a sandwich."),
-        picture("juice", [("jugo", "🧃"), ("café", "☕"), ("leche", "🥛")], "jugo"),
-        meaning("ice cream", ["jugo", "helado", "pan"], "helado"),
-        ("word_bank", "Write this in English", {"phrase": "Quiero un jugo.",
-         "words": ["I", "want", "a", "juice", "coffee"]}, ["I", "want", "a", "juice"], "Quiero un jugo means I want a juice."),
-        ("match", "Select the matching pairs", {"pairs": [["bread", "pan"], ["sandwich", "sándwich"],
-         ["ice cream", "helado"], ["juice", "jugo"]], "right_order": ["helado", "pan", "jugo", "sándwich"]},
-         [["bread", "pan"], ["sandwich", "sándwich"], ["ice cream", "helado"], ["juice", "jugo"]], "Nice!"),
-        meaning("juice", ["jugo", "café", "té"], "jugo"),
-        ("word_bank", "Write this in English", {"phrase": "La cuenta, por favor.",
-         "words": ["the", "bill", "please", "menu"]}, ["the", "bill", "please"], "La cuenta means the bill."),
-    ]
-    rows[0][2]["reference_lesson"] = True
-    for order, (kind, prompt, payload, expected, explanation) in enumerate(rows, 1):
-        updated = connection.execute(
-            "UPDATE exercises SET type = ?, prompt = ?, payload_json = ?, answer_json = ?, explanation = ?, is_active = 1 "
-            "WHERE lesson_id = 23 AND sort_order = ?",
-            (kind, prompt, json.dumps(payload, ensure_ascii=False), json.dumps(expected, ensure_ascii=False), explanation, order),
-        )
-        if updated.rowcount == 0:
-            connection.execute(
-                "INSERT INTO exercises (lesson_id, sort_order, type, prompt, payload_json, answer_json, explanation, is_active) "
-                "VALUES (?, ?, ?, ?, ?, ?, ?, 1)",
-                (23, order, kind, prompt, json.dumps(payload, ensure_ascii=False), json.dumps(expected, ensure_ascii=False), explanation),
-            )
-    connection.execute("UPDATE exercises SET is_active = 0 WHERE lesson_id = 23 AND sort_order > 12")
+    sync_observed_lesson(connection, 4, 23, "Order tea and coffee")
 
 
 def sync_fifth_lesson_reference(connection: sqlite3.Connection) -> None:

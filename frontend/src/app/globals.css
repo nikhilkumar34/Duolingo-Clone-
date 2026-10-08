@@ -135,6 +135,13 @@ h1,h2,h3{letter-spacing:-.035em}
 .path-unit.fresh-start .nodes-wrap{padding-top:82px}
 .lesson-label:empty{display:none}
 .meaning-prompt{font-size:27px;font-weight:700;margin:-10px 0 30px;color:var(--text)}
+.choice-artwork{width:160px;height:160px;max-width:100%;object-fit:contain;display:block}
+.lesson-chat{max-width:650px;margin:0 0 30px;display:flex;flex-direction:column;gap:24px}
+.chat-prompt,.chat-response{display:flex;align-items:center;gap:18px}
+.lesson-chat img{width:65px;height:65px;object-fit:contain;flex:none}
+.chat-response{justify-content:flex-end}
+.chat-response>span{border:2px solid var(--line);border-radius:16px;padding:16px 24px;min-width:80px;font-size:21px;text-align:center}
+@media(max-width:700px){.choice-artwork{width:100px;height:100px}.lesson-chat img{width:48px;height:48px}.lesson-chat{gap:16px}.chat-response>span{font-size:17px}}
 .meaning-choices{display:flex;flex-direction:column;gap:12px;max-width:650px}
 .meaning-choices button{height:68px;display:flex;align-items:center;gap:18px;padding:0 20px;border:2px solid var(--line);border-bottom-width:5px;border-radius:16px;background:transparent;color:var(--text);font-size:21px;font-weight:700;text-align:left}
 .meaning-choices button:hover,.meaning-choices button.chosen{background:#17313e;border-color:#48c2f0}

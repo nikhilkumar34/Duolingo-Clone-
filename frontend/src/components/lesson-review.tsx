@@ -15,6 +15,7 @@ function reviewTitle(item: ReviewItem) {
   if (item.type === "word_bank" || item.type === "type") return /Spanish/i.test(item.prompt) ? "Write in Spanish:" : "Write in English:";
   if (item.type === "match") return "Select the matching pairs";
   if (item.type === "fill_blank") return "Complete the translation";
+  if (item.payload.mode === "chat") return "Complete the chat";
   return item.payload.mode === "meaning" ? "Select the correct meaning" : "Choose the correct picture";
 }
 

@@ -1,0 +1,517 @@
+{
+  "source": "Observed in the user-supplied signed-in Spanish course, Section 1 Unit 1",
+  "captured_on": "2026-10-08",
+  "source_positions": {
+    "3": "First node, Lesson 3 of 3",
+    "4": "Second node, Lesson 1 of 4"
+  },
+  "lessons": {
+    "3": [
+      {
+        "type": "choice",
+        "prompt": "Which one of these is “green”?",
+        "tag": "NEW WORD",
+        "choices": [
+          "libro",
+          "verde",
+          "mamá"
+        ],
+        "answer": "verde"
+      },
+      {
+        "type": "choice",
+        "prompt": "Which one of these is “blue”?",
+        "tag": "NEW WORD",
+        "choices": [
+          "perro",
+          "casa",
+          "azul"
+        ],
+        "answer": "azul"
+      },
+      {
+        "type": "word_bank",
+        "prompt": "Write this in English",
+        "tag": "NEW WORD",
+        "phrase": "Mi perro es grande.",
+        "words": [
+          "dog",
+          "is",
+          "My",
+          "green",
+          "big",
+          "blue"
+        ],
+        "answer": [
+          "My",
+          "dog",
+          "is",
+          "big"
+        ]
+      },
+      {
+        "type": "choice",
+        "mode": "meaning",
+        "prompt": "Select the correct meaning",
+        "phrase": "big",
+        "choices": [
+          "grande",
+          "verde",
+          "azul"
+        ],
+        "answer": "grande"
+      },
+      {
+        "type": "word_bank",
+        "prompt": "Write this in English",
+        "phrase": "Mi libro es verde.",
+        "words": [
+          "My",
+          "book",
+          "green",
+          "is",
+          "blue",
+          "suitcase"
+        ],
+        "answer": [
+          "My",
+          "book",
+          "is",
+          "green"
+        ]
+      },
+      {
+        "type": "choice",
+        "mode": "meaning",
+        "prompt": "Select the correct meaning",
+        "phrase": "green",
+        "choices": [
+          "grande",
+          "verde",
+          "azul"
+        ],
+        "answer": "verde"
+      },
+      {
+        "type": "word_bank",
+        "prompt": "Write this in English",
+        "phrase": "Mi maleta es azul.",
+        "words": [
+          "suitcase",
+          "big",
+          "blue",
+          "book",
+          "is",
+          "My"
+        ],
+        "answer": [
+          "My",
+          "suitcase",
+          "is",
+          "blue"
+        ]
+      },
+      {
+        "type": "word_bank",
+        "prompt": "Write this in English",
+        "phrase": "Mi gato es azul.",
+        "words": [
+          "green",
+          "My",
+          "dog",
+          "is",
+          "cat",
+          "blue"
+        ],
+        "answer": [
+          "My",
+          "cat",
+          "is",
+          "blue"
+        ]
+      },
+      {
+        "type": "choice",
+        "mode": "meaning",
+        "prompt": "Select the correct meaning",
+        "phrase": "blue",
+        "choices": [
+          "verde",
+          "grande",
+          "azul"
+        ],
+        "answer": "azul"
+      },
+      {
+        "type": "match",
+        "prompt": "Select the matching pairs",
+        "pairs": [
+          [
+            "water",
+            "agua"
+          ],
+          [
+            "blue",
+            "azul"
+          ],
+          [
+            "milk",
+            "leche"
+          ],
+          [
+            "big",
+            "grande"
+          ],
+          [
+            "mom",
+            "mamá"
+          ]
+        ],
+        "right_order": [
+          "azul",
+          "leche",
+          "grande",
+          "mamá",
+          "agua"
+        ]
+      },
+      {
+        "type": "match",
+        "prompt": "Select the matching pairs",
+        "pairs": [
+          [
+            "suitcase",
+            "maleta"
+          ],
+          [
+            "dad",
+            "papá"
+          ],
+          [
+            "book",
+            "libro"
+          ],
+          [
+            "house",
+            "casa"
+          ],
+          [
+            "green",
+            "verde"
+          ]
+        ],
+        "right_order": [
+          "papá",
+          "maleta",
+          "casa",
+          "verde",
+          "libro"
+        ]
+      },
+      {
+        "type": "word_bank",
+        "prompt": "Write this in Spanish",
+        "phrase": "My house is green.",
+        "words": [
+          "es",
+          "azul",
+          "verde",
+          "Mi",
+          "casa",
+          "leche"
+        ],
+        "answer": [
+          "Mi",
+          "casa",
+          "es",
+          "verde"
+        ]
+      },
+      {
+        "type": "word_bank",
+        "prompt": "Write this in Spanish",
+        "phrase": "My cat is big.",
+        "words": [
+          "Mi",
+          "gato",
+          "verde",
+          "es",
+          "grande",
+          "perro"
+        ],
+        "answer": [
+          "Mi",
+          "gato",
+          "es",
+          "grande"
+        ]
+      }
+    ],
+    "4": [
+      {
+        "type": "choice",
+        "prompt": "Which one of these is “tea”?",
+        "tag": "NEW WORD",
+        "choices": [
+          "té",
+          "taco",
+          "café"
+        ],
+        "answer": "té"
+      },
+      {
+        "type": "choice",
+        "prompt": "Which one of these is “coffee”?",
+        "tag": "NEW WORD",
+        "choices": [
+          "té",
+          "café",
+          "un sándwich"
+        ],
+        "answer": "café"
+      },
+      {
+        "type": "word_bank",
+        "prompt": "Write this in English",
+        "tag": "NEW WORD",
+        "phrase": "Un té.",
+        "words": [
+          "tea",
+          "A",
+          "please"
+        ],
+        "answer": [
+          "A",
+          "tea"
+        ]
+      },
+      {
+        "type": "word_bank",
+        "prompt": "Write this in English",
+        "tag": "NEW WORD",
+        "phrase": "Por favor.",
+        "words": [
+          "Please",
+          "water"
+        ],
+        "answer": [
+          "Please"
+        ]
+      },
+      {
+        "type": "word_bank",
+        "prompt": "Write this in English",
+        "phrase": "Un café, por favor.",
+        "words": [
+          "please",
+          "A",
+          "hello",
+          "coffee"
+        ],
+        "answer": [
+          "A",
+          "coffee",
+          "please"
+        ]
+      },
+      {
+        "type": "word_bank",
+        "prompt": "Write this in English",
+        "tag": "NEW WORD",
+        "phrase": "Hola, un té.",
+        "words": [
+          "tea",
+          "a",
+          "with",
+          "Hello"
+        ],
+        "answer": [
+          "Hello",
+          "a",
+          "tea"
+        ]
+      },
+      {
+        "type": "choice",
+        "mode": "meaning",
+        "prompt": "Select the correct meaning",
+        "phrase": "hello",
+        "choices": [
+          "hola",
+          "café",
+          "por favor"
+        ],
+        "answer": "hola"
+      },
+      {
+        "type": "word_bank",
+        "prompt": "Write this in English",
+        "tag": "NEW WORD",
+        "phrase": "un café con leche",
+        "words": [
+          "water",
+          "milk",
+          "a",
+          "with",
+          "coffee"
+        ],
+        "answer": [
+          "a",
+          "coffee",
+          "with",
+          "milk"
+        ]
+      },
+      {
+        "type": "word_bank",
+        "prompt": "Write this in English",
+        "phrase": "¡Un café con leche, por favor!",
+        "words": [
+          "milk",
+          "coffee",
+          "with",
+          "please",
+          "A",
+          "water"
+        ],
+        "answer": [
+          "A",
+          "coffee",
+          "with",
+          "milk",
+          "please"
+        ]
+      },
+      {
+        "type": "word_bank",
+        "prompt": "Write this in English",
+        "tag": "NEW WORD",
+        "phrase": "Hola, quiero un café.",
+        "words": [
+          "I",
+          "want",
+          "coffee",
+          "Hello",
+          "perfect",
+          "a"
+        ],
+        "answer": [
+          "Hello",
+          "I",
+          "want",
+          "a",
+          "coffee"
+        ]
+      },
+      {
+        "type": "word_bank",
+        "prompt": "Write this in English",
+        "phrase": "Hola, quiero un té, por favor.",
+        "words": [
+          "a",
+          "water",
+          "Hello",
+          "please",
+          "tea",
+          "want",
+          "I"
+        ],
+        "answer": [
+          "Hello",
+          "I",
+          "want",
+          "a",
+          "tea",
+          "please"
+        ]
+      },
+      {
+        "type": "choice",
+        "mode": "chat",
+        "prompt": "Complete the chat",
+        "phrase": "¿Un café?",
+        "choices": [
+          "¡Un té, por favor!",
+          "Hola."
+        ],
+        "answer": "¡Un té, por favor!"
+      },
+      {
+        "type": "word_bank",
+        "prompt": "Write this in Spanish",
+        "tag": "HARD EXERCISE",
+        "phrase": "I want a tea, please.",
+        "words": [
+          "por",
+          "favor",
+          "Quiero",
+          "té",
+          "taco",
+          "un"
+        ],
+        "answer": [
+          "Quiero",
+          "un",
+          "té",
+          "por",
+          "favor"
+        ]
+      },
+      {
+        "type": "word_bank",
+        "prompt": "Write this in Spanish",
+        "tag": "HARD EXERCISE",
+        "phrase": "A coffee with milk, please!",
+        "words": [
+          "favor",
+          "leche",
+          "café",
+          "con",
+          "vaso de",
+          "por",
+          "Un"
+        ],
+        "answer": [
+          "Un",
+          "café",
+          "con",
+          "leche",
+          "por",
+          "favor"
+        ]
+      },
+      {
+        "type": "word_bank",
+        "prompt": "Write this in Spanish",
+        "tag": "HARD EXERCISE",
+        "phrase": "Hello, I want a coffee with milk.",
+        "words": [
+          "con",
+          "leche",
+          "quieres",
+          "un",
+          "quiero",
+          "café",
+          "Hola"
+        ],
+        "answer": [
+          "Hola",
+          "quiero",
+          "un",
+          "café",
+          "con",
+          "leche"
+        ]
+      }
+    ]
+  },
+  "artwork": {
+    "perro": "https://d2pur3iezf4d1j.cloudfront.net/images/d8adb479aed80e6420f566afea110eb1",
+    "casa": "https://d2pur3iezf4d1j.cloudfront.net/images/6d966ea1c0962c0b81bf2f1f82fc18fd",
+    "azul": "https://d2pur3iezf4d1j.cloudfront.net/images/fc102c2c6544341f2b61659af8acb4c2",
+    "té": "https://d2pur3iezf4d1j.cloudfront.net/images/18a521f1507cb86689faa5b2e8277703",
+    "taco": "https://d2pur3iezf4d1j.cloudfront.net/images/31a1f663c9536e3ed265d470dd43b15a",
+    "café": "https://d2pur3iezf4d1j.cloudfront.net/images/6fd84b8a838c43c4a84b44b08b10177e",
+    "un sándwich": "https://d2pur3iezf4d1j.cloudfront.net/images/d56b5cfc3455ffcdac9b1207d34cdeaa"
+  }
+}
