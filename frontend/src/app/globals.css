@@ -132,9 +132,12 @@ h1,h2,h3{letter-spacing:-.035em}
 /* One persistent banner replaces the separate sticky banner on every unit. */
 .path-header-sticky{position:sticky;top:0;z-index:6;background:var(--bg);padding-top:28px;margin-top:-28px}
 .path-header-sticky .unit-header{position:relative;top:auto;z-index:auto}
+.path-unit.fresh-start .nodes-wrap{padding-top:82px}
 @media (min-width:1121px) and (max-width:1550px){.path-header-sticky{padding-top:23px;margin-top:-23px}}
+@media (min-width:1121px) and (max-width:1550px){.path-unit.fresh-start .nodes-wrap{padding-top:75px}}
 @media (max-width:1120px){.path-header-sticky{padding-top:20px;margin-top:-20px}}
 @media (max-width:700px){.path-header-sticky{padding-top:8px;margin-top:-8px}}
+@media (max-width:700px){.path-unit.fresh-start .nodes-wrap{padding-top:72px}}
 
 /* Lesson momentum and reward sequence. */
 .lesson-progress-wrap{position:relative;flex:1}
