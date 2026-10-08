@@ -538,6 +538,55 @@ def sync_second_lesson_reference(connection: sqlite3.Connection) -> None:
     connection.execute("UPDATE exercises SET is_active = 0 WHERE lesson_id = 2 AND sort_order > 12")
 
 
+def sync_third_lesson_reference(connection: sqlite3.Connection) -> None:
+    """Keep Unit 1, Lesson 3 as a complete café vocabulary lesson."""
+    def picture(word: str, choices: list[tuple[str, str]], answer: str):
+        return ("choice", f"Which one of these is “{word}”?",
+                {"choices": [{"label": label, "emoji": emoji} for label, emoji in choices], "tag": "NEW WORD"},
+                answer, f"{answer} means {word}.")
+
+    def meaning(word: str, choices: list[str], answer: str):
+        return ("choice", "Select the correct meaning",
+                {"mode": "meaning", "phrase": word, "choices": [{"label": choice} for choice in choices]},
+                answer, f"{answer} means {word}.")
+
+    pairs = [["tea", "té"], ["bread", "pan"], ["coffee", "café"], ["milk", "leche"], ["water", "agua"]]
+    rows = [
+        picture("tea", [("té", "🍵"), ("pan", "🥖"), ("agua", "💧")], "té"),
+        picture("bread", [("café", "☕"), ("pan", "🥖"), ("leche", "🥛")], "pan"),
+        picture("coffee", [("agua", "💧"), ("café", "☕"), ("té", "🍵")], "café"),
+        ("match", "Select the matching pairs", {"pairs": pairs,
+         "right_order": ["pan", "agua", "té", "leche", "café"]}, pairs, "Correct!"),
+        meaning("tea", ["té", "café", "pan"], "té"),
+        ("word_bank", "Write this in English", {"phrase": "Un té, por favor.",
+         "words": ["a", "tea", "please", "coffee"]}, ["a", "tea", "please"], "Un té means a tea."),
+        picture("ice", [("hielo", "🧊"), ("azúcar", "🍬"), ("leche", "🥛")], "hielo"),
+        meaning("bread", ["café", "pan", "hielo"], "pan"),
+        ("word_bank", "Write this in English", {"phrase": "Un café, por favor.",
+         "words": ["a", "coffee", "please", "tea"]}, ["a", "coffee", "please"], "Un café means a coffee."),
+        ("match", "Select the matching pairs", {"pairs": [["tea", "té"], ["coffee", "café"],
+         ["ice", "hielo"], ["bread", "pan"]], "right_order": ["café", "hielo", "pan", "té"]},
+         [["tea", "té"], ["coffee", "café"], ["ice", "hielo"], ["bread", "pan"]], "Nice!"),
+        meaning("ice", ["hielo", "leche", "agua"], "hielo"),
+        ("word_bank", "Write this in English", {"phrase": "Quiero un pan.",
+         "words": ["I", "want", "a", "bread", "coffee"]}, ["I", "want", "a", "bread"], "Quiero un pan means I want a bread."),
+    ]
+    rows[0][2]["reference_lesson"] = True
+    for order, (kind, prompt, payload, expected, explanation) in enumerate(rows, 1):
+        updated = connection.execute(
+            "UPDATE exercises SET type = ?, prompt = ?, payload_json = ?, answer_json = ?, explanation = ?, is_active = 1 "
+            "WHERE lesson_id = 22 AND sort_order = ?",
+            (kind, prompt, json.dumps(payload, ensure_ascii=False), json.dumps(expected, ensure_ascii=False), explanation, order),
+        )
+        if updated.rowcount == 0:
+            connection.execute(
+                "INSERT INTO exercises (lesson_id, sort_order, type, prompt, payload_json, answer_json, explanation, is_active) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, 1)",
+                (22, order, kind, prompt, json.dumps(payload, ensure_ascii=False), json.dumps(expected, ensure_ascii=False), explanation),
+            )
+    connection.execute("UPDATE exercises SET is_active = 0 WHERE lesson_id = 22 AND sort_order > 12")
+
+
 def migrate_schema(connection: sqlite3.Connection) -> None:
     if "is_active" not in {row[1] for row in connection.execute("PRAGMA table_info(exercises)")}:
         connection.execute("ALTER TABLE exercises ADD COLUMN is_active INTEGER NOT NULL DEFAULT 1")
@@ -553,6 +602,7 @@ with db() as connection:
     sync_reference_path(connection)
     sync_first_lesson_reference(connection)
     sync_second_lesson_reference(connection)
+    sync_third_lesson_reference(connection)
 
 
 def learner(connection: sqlite3.Connection, client_id: str) -> int:
