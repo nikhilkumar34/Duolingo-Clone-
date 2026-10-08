@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useCallback, useEffect, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { ArrowLeft, ArrowRight, ArrowUp, BookOpen, Check, ChevronDown, ChevronRight, Dumbbell, FastForward, Flame, Headphones, Heart, Home, LockKeyhole, Menu, MoreHorizontal, Pencil, Play, Settings, Shield, ShoppingBag, Sparkles, Star, Trophy, Volume2, X, Zap } from "lucide-react";
 import { api, firstVisitWelcome, patch, post, type AnswerResult, type Bootstrap, type Exercise, type LessonStart, type Skill, type Unit } from "@/lib/api";
 import { playEffect, pronunciationSource } from "@/lib/lesson-audio";
@@ -301,9 +301,27 @@ function StreakCalendar({ streak, className = "" }: { streak: number; className?
 }
 
 function LessonCeremony({ reward, onContinue, onPractice, onToast }: { reward: LessonReward; onContinue: () => void; onPractice: () => void; onToast: (message: string) => void }) {
+  const mainRef = useRef<HTMLDivElement>(null);
+  const bodyRef = useRef<HTMLDivElement>(null);
+  const [contentScale, setContentScale] = useState(1);
+  useLayoutEffect(() => {
+    const main = mainRef.current;
+    const body = bodyRef.current;
+    if (!main || !body) return;
+    const fitContent = () => {
+      const style = getComputedStyle(main);
+      const availableHeight = main.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom);
+      setContentScale(Math.min(1, availableHeight / Math.max(1, body.offsetHeight)));
+    };
+    const observer = new ResizeObserver(fitContent);
+    observer.observe(main);
+    observer.observe(body);
+    fitContent();
+    return () => observer.disconnect();
+  }, [reward.stage, reward.type]);
   const perfect = reward.accuracy === 100;
   const newBadges = [reward.previousXp < 100 && reward.previousXp + reward.xp >= 100 ? "Sage badge unlocked" : "", reward.streakAdvanced && reward.streak === 3 ? "Wildfire badge unlocked" : "", reward.previousDailyXp < DAILY_QUEST_XP && reward.previousDailyXp + reward.xp >= DAILY_QUEST_XP ? "Daily quest complete" : ""].filter(Boolean);
-  return <div className="ceremony-overlay"><div className="ceremony-main"><div className="ceremony-body">{reward.type === "failed" ? <><div className="ceremony-failed-heart"><Heart fill="currentColor" size={116} /></div><h1>Out of hearts!</h1><p>Practice to earn a heart and keep learning.</p></> : reward.stage === "streak" ? <><div className="ceremony-flame"><Flame fill="currentColor" strokeWidth={1} /></div><div className="streak-number">{reward.streak}</div><h1 className="streak-title">day streak</h1><div className="streak-ceremony-card"><StreakCalendar streak={reward.streak} /><p>Practice each day so your streak won’t reset!</p></div></> : <><div className="ceremony-celebration"><span className="firework one">✦</span><span className="firework two">✦</span><span className="firework three">✦</span><div className="ceremony-mascot"><Owl size="large" /><span>🎧</span></div><div className="ceremony-friend">🧑🏻‍🎤</div><div className="ceremony-stage" /></div><h1>{perfect ? "Perfect lesson!" : "Lesson complete!"}</h1><p>{perfect ? "You made no mistakes in this lesson" : `You got ${reward.accuracy}% correct. Keep it up!`}</p><div className="reward-cards"><div className="reward-card xp"><span>TOTAL XP</span><strong><Zap fill="currentColor" /> +{reward.xp}</strong></div><div className="reward-card accuracy"><span>{perfect ? "AMAZING" : "ACCURACY"}</span><strong>🎯 {reward.accuracy}%</strong></div></div>{newBadges.length > 0 && <div className="new-badges">{newBadges.map(badge => <span key={badge}>✦ {badge}</span>)}</div>}</>}</div></div><aside className="ceremony-side"><div className="ad-card"><SuperBird className="ad-bird" /><h3>Using an ad blocker?</h3><p>Support education with Super Duolingo and we’ll remove ads for you</p><Button variant="white" onClick={() => onToast("Super is coming soon")}>TRY SUPER FOR FREE</Button><button onClick={() => onToast("Thanks for supporting learning!")}>DISABLE AD BLOCKER</button></div></aside><footer className="ceremony-footer"><div><Button variant="outline" disabled>REVIEW LESSON</Button><Button variant={reward.stage === "streak" ? "blue" : "green"} onClick={reward.type === "failed" ? onPractice : onContinue}>{reward.type === "failed" ? "PRACTICE TO EARN A HEART" : "CONTINUE"}</Button></div></footer></div>;
+  return <div className="ceremony-overlay"><div className="ceremony-main" ref={mainRef}><div className="ceremony-body" ref={bodyRef} style={{ transform: `scale(${contentScale})` }}>{reward.type === "failed" ? <><div className="ceremony-failed-heart"><Heart fill="currentColor" size={116} /></div><h1>Out of hearts!</h1><p>Practice to earn a heart and keep learning.</p></> : reward.stage === "streak" ? <><div className="ceremony-flame"><Flame fill="currentColor" strokeWidth={1} /></div><div className="streak-number">{reward.streak}</div><h1 className="streak-title">day streak</h1><div className="streak-ceremony-card"><StreakCalendar streak={reward.streak} /><p>Practice each day so your streak won’t reset!</p></div></> : <><div className="ceremony-celebration"><span className="firework one">✦</span><span className="firework two">✦</span><span className="firework three">✦</span><div className="ceremony-mascot"><Owl size="large" /><span>🎧</span></div><div className="ceremony-friend">🧑🏻‍🎤</div><div className="ceremony-stage" /></div><h1>{perfect ? "Perfect lesson!" : "Lesson complete!"}</h1><p>{perfect ? "You made no mistakes in this lesson" : `You got ${reward.accuracy}% correct. Keep it up!`}</p><div className="reward-cards"><div className="reward-card xp"><span>TOTAL XP</span><strong><Zap fill="currentColor" /> +{reward.xp}</strong></div><div className="reward-card accuracy"><span>{perfect ? "AMAZING" : "ACCURACY"}</span><strong>🎯 {reward.accuracy}%</strong></div></div>{newBadges.length > 0 && <div className="new-badges">{newBadges.map(badge => <span key={badge}>✦ {badge}</span>)}</div>}</>}</div></div><aside className="ceremony-side"><div className="ad-card"><SuperBird className="ad-bird" /><h3>Using an ad blocker?</h3><p>Support education with Super Duolingo and we’ll remove ads for you</p><Button variant="white" onClick={() => onToast("Super is coming soon")}>TRY SUPER FOR FREE</Button><button onClick={() => onToast("Thanks for supporting learning!")}>DISABLE AD BLOCKER</button></div></aside><footer className="ceremony-footer"><div><Button variant="outline" disabled>REVIEW LESSON</Button><Button variant={reward.stage === "streak" ? "blue" : "green"} onClick={reward.type === "failed" ? onPractice : onContinue}>{reward.type === "failed" ? "PRACTICE TO EARN A HEART" : "CONTINUE"}</Button></div></footer></div>;
 }
 
 export default function HomePage() {

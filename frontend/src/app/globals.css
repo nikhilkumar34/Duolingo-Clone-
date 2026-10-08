@@ -179,12 +179,13 @@ body:has(.lesson-overlay),body:has(.ceremony-overlay){overflow:hidden}
 .combo-burst{position:absolute;color:#ffc800;font-size:62px;animation:burst-spin 2.2s ease-in-out infinite}
 .combo-burst.burst-a{top:23%;left:29%}.combo-burst.burst-b{bottom:23%;right:24%;color:#ce82ff;animation-delay:.45s}
 
-.ceremony-overlay{position:fixed;inset:0;z-index:80;background:var(--bg);display:grid;grid-template-columns:1fr 1fr;grid-template-rows:minmax(0,1fr) 165px;overflow:hidden}
-.ceremony-main{border-right:2px solid var(--line);min-width:0;overflow:auto;display:flex;align-items:safe center;justify-content:center;padding:35px 30px 24px}
-.ceremony-body{width:min(540px,100%);text-align:center;display:flex;align-items:center;flex-direction:column}
+.ceremony-overlay{position:fixed;inset:0;z-index:80;background:var(--bg);display:grid;grid-template-columns:1fr 1fr;grid-template-rows:minmax(0,1fr) clamp(90px,18dvh,165px);overflow:hidden}
+.ceremony-main{border-right:2px solid var(--line);min-width:0;min-height:0;overflow:hidden;display:flex;align-items:center;justify-content:center;padding:24px 30px}
+.ceremony-body{width:min(540px,100%);flex-shrink:0;text-align:center;display:flex;align-items:center;flex-direction:column;transform-origin:center}
+.ceremony-body>*{flex-shrink:0}
 .ceremony-body h1{font-size:38px;color:#ffc800;margin:14px 0 10px;line-height:1.15}
-.ceremony-body>p{font-size:20px;color:#5d737d;margin:5px 0 35px}
-.ceremony-celebration{height:315px;width:100%;position:relative;display:flex;align-items:flex-end;justify-content:center}
+.ceremony-body>p{font-size:20px;color:#5d737d;margin:5px 0 24px}
+.ceremony-celebration{height:clamp(190px,30dvh,260px);width:100%;position:relative;display:flex;align-items:flex-end;justify-content:center}
 .ceremony-mascot{width:165px;height:180px;position:relative;z-index:2;animation:mascot-dance 2.1s ease-in-out infinite}
 .ceremony-mascot .owl{margin:0 auto;transform:scale(.85)}
 .ceremony-mascot>span{position:absolute;top:2px;left:42px;font-size:53px;transform:rotate(-10deg)}
@@ -231,7 +232,7 @@ body:has(.lesson-overlay),body:has(.ceremony-overlay){overflow:hidden}
 @keyframes reward-pop{from{opacity:0;transform:scale(.65) translateY(20px)}to{opacity:1;transform:scale(1) translateY(0)}}
 @keyframes heart-pulse{50%{transform:scale(1.12)}}
 @keyframes flame-flicker{50%{transform:rotate(6deg) scale(1.07)}}
-@media(max-width:900px){.ceremony-overlay{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) 105px}.ceremony-side{display:none}.ceremony-main{border:0;align-items:safe center}.ceremony-celebration{height:230px}.ceremony-friend{font-size:95px}.ceremony-mascot{transform:scale(.7)}.ceremony-footer>div{width:calc(100% - 35px)}.ceremony-footer .duo-button{min-width:0}.combo-interlude{gap:16px}.combo-interlude .owl{transform:scale(.9)}.combo-speech{font-size:18px}}
+@media(max-width:900px){.ceremony-overlay{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) clamp(80px,15dvh,105px)}.ceremony-side{display:none}.ceremony-main{border:0;align-items:center}.ceremony-celebration{height:230px}.ceremony-friend{font-size:95px}.ceremony-mascot{transform:scale(.7)}.ceremony-footer>div{width:calc(100% - 35px)}.ceremony-footer .duo-button{min-width:0}.combo-interlude{gap:16px}.combo-interlude .owl{transform:scale(.9)}.combo-speech{font-size:18px}}
 @media(max-width:600px){.ceremony-main{padding:20px 15px}.ceremony-body h1{font-size:29px}.ceremony-body>p{font-size:16px}.ceremony-celebration{height:190px}.reward-card{height:94px}.reward-card>strong{font-size:20px}.ceremony-footer .duo-button{font-size:12px}.streak-number{font-size:100px}.ceremony-flame{width:85px;height:100px;margin-top:10px}.streak-calendar b{width:31px;height:31px}.streak-calendar>div{font-size:12px}.feedback-actions{font-size:10px}}
 @media(max-height:700px){.ceremony-main{padding-top:12px;padding-bottom:12px}.ceremony-flame{width:85px;height:95px;margin-top:0}.streak-number{font-size:95px}.ceremony-body h1.streak-title{font-size:26px;margin-bottom:12px}.streak-calendar{padding:10px 12px}.streak-ceremony-card p{padding:9px 12px;font-size:16px}}
 @media(prefers-reduced-motion:reduce){.combo-label,.lesson-content .lesson-label,.lesson-content h1,.lesson-footer.correct,.lesson-footer.incorrect,.combo-interlude,.combo-speech,.combo-burst,.ceremony-mascot,.ceremony-friend,.firework,.reward-card,.new-badges span,.ceremony-failed-heart,.ceremony-flame,.streak-number,.streak-calendar .active b{animation:none!important}}
