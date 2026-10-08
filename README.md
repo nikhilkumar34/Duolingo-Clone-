@@ -124,4 +124,3 @@ The included [`backend/railway.json`](backend/railway.json) starts FastAPI on Ra
 4. Open the Vercel URL, complete a lesson, refresh, and verify the new XP and path state still appear. Submit both the public GitHub URL and the Vercel URL.
 
 Railway [monorepo](https://docs.railway.com/deployments/monorepo) and [volume](https://docs.railway.com/volumes/reference) guides explain the root directory and persistent mount; Vercel documents [Next.js deployment](https://vercel.com/docs/frameworks/full-stack/nextjs) and [public environment variables](https://vercel.com/docs/environment-variables/framework-environment-variables).
-
