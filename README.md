@@ -1,6 +1,6 @@
 # LingoPath — Duolingo-inspired Spanish learning app
 
-A full-stack learning-path demo built for the supplied assignment. It recreates the dark Duolingo web layout and the core lesson loop: unlock skills, answer varied exercises, receive instant feedback, earn XP, build a streak, and manage hearts. The Spanish course and default learner are seeded on first API startup.
+A full-stack learning-path demo built for the supplied assignment. It recreates the dark Duolingo web layout and the core lesson loop: unlock skills, answer varied exercises, receive instant feedback, earn XP, build a streak, and manage hearts. The Spanish course is seeded on first API startup; each browser gets a fresh learner profile.
 
 ## Stack
 
@@ -52,6 +52,7 @@ For deployment, point `NEXT_PUBLIC_API_URL` at the public backend URL. Set `FRON
 - Spanish and English pronunciation clips for the seeded lesson vocabulary.
 - Server-checked answers, immediate feedback, progress bar, lesson completion and out-of-hearts states.
 - Persistent XP, daily XP goal, streak, hearts, gems, and skill completion.
+- First-visit welcome animation, zeroed starting stats, and an editable profile name. Starting lesson one grants five tutorial hearts so a new learner can play immediately.
 - One heart regenerates every 30 minutes. Mocked practice restores one heart; 350 gems refill all hearts.
 - Profile statistics and achievements, seeded leaderboard, quests, shop, practice, guidebook, and status popovers.
 - Desktop and mobile layouts. Super, social, speech, and settings actions show clear placeholders.
@@ -66,7 +67,7 @@ For deployment, point `NEXT_PUBLIC_API_URL` at the public backend URL. Set `FRON
 
 | Table | Purpose / key relationships |
 | --- | --- |
-| `users` | One default learner; XP, gems, hearts, streak, daily XP and activity dates |
+| `users` | One record per browser learner ID; editable name, XP, gems, hearts, streak, daily XP and activity dates |
 | `units` | Ordered course units and display colors |
 | `skills` | Ordered skills belonging to a unit |
 | `lessons` | Lessons belonging to a skill |
@@ -76,6 +77,8 @@ For deployment, point `NEXT_PUBLIC_API_URL` at the public backend URL. Set `FRON
 | `session_answers` | One checked answer per exercise in an attempt |
 
 Foreign keys are enabled for every connection. A unique `(session_id, exercise_id)` key and ordered-answer checks prevent duplicate XP or jumping ahead within a session.
+
+The frontend stores a random learner UUID in that browser's local storage and sends it as `X-Learner-Id`. This separates demo progress without requiring sign-up. Clearing browser storage starts a new profile. The ID is not an authentication credential, so this is appropriate for a demo rather than private user accounts.
 
 ### API overview
 
@@ -87,6 +90,7 @@ Foreign keys are enabled for every connection. A unique `(session_id, exercise_i
 | `POST /api/sessions/{session_id}/answer` | Check the next answer, update hearts, finish lesson and award XP |
 | `POST /api/practice/refill` | Mocked practice: recover one heart |
 | `POST /api/hearts/refill` | Spend 350 gems to refill hearts |
+| `PATCH /api/profile` | Update the current learner's display name |
 
 ## Verification
 
@@ -108,7 +112,7 @@ The backend tests use a separate temporary database and cover a complete lesson,
 
 ## Assumptions and scope
 
-- The demo uses a single default learner instead of authentication.
+- The demo uses per-browser learner IDs instead of account authentication.
 - The Spanish course is seeded through Unit 8. Existing learner progress survives course content updates. Completed lessons can be replayed.
 - Real social features, subscriptions, and purchasing are placeholders as permitted by the assignment.
 - The leaderboard contains seeded peers and sorts the learner by current XP. It is a demo league rather than live multiplayer ranking.
@@ -120,7 +124,7 @@ The backend tests use a separate temporary database and cover a complete lesson,
 - Backend health check: https://duolingo-clone-production-e382.up.railway.app/api/health
 - Source: https://github.com/nikhilkumar34/Duolingo-Clone-
 
-The public frontend runs on Vercel and calls the Railway API. Railway stores the SQLite database on a `/data` volume. The default demo learner is shared by visitors, so its XP, streak, and path progress may change as people use the site.
+The public frontend runs on Vercel and calls the Railway API. Railway stores the SQLite database on a `/data` volume. Each visitor's browser keeps its own learner ID and progress.
 
 ## Deploy
 

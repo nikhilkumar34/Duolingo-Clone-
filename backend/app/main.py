@@ -10,9 +10,9 @@ from contextlib import contextmanager
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
-from uuid import uuid4
+from uuid import UUID, uuid4
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
@@ -55,8 +55,8 @@ def as_dict(row: sqlite3.Row | None) -> dict[str, Any] | None:
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS users (
   id INTEGER PRIMARY KEY, username TEXT NOT NULL UNIQUE, display_name TEXT NOT NULL,
-  joined_at TEXT NOT NULL, xp INTEGER NOT NULL DEFAULT 0, gems INTEGER NOT NULL DEFAULT 500,
-  hearts INTEGER NOT NULL DEFAULT 5, hearts_updated_at TEXT NOT NULL,
+  client_id TEXT UNIQUE, joined_at TEXT NOT NULL, xp INTEGER NOT NULL DEFAULT 0, gems INTEGER NOT NULL DEFAULT 0,
+  hearts INTEGER NOT NULL DEFAULT 0, hearts_updated_at TEXT NOT NULL,
   streak INTEGER NOT NULL DEFAULT 0, last_active_date TEXT,
   daily_xp INTEGER NOT NULL DEFAULT 0, daily_xp_date TEXT
 );
@@ -102,8 +102,8 @@ def seed(connection: sqlite3.Connection) -> None:
         return
     stamp = now().isoformat()
     connection.execute(
-        "INSERT INTO users VALUES (1, ?, ?, ?, 74, 575, 5, ?, 1, ?, 30, ?)",
-        ("NikhilKumar34", "Nikhil Kumar", stamp, stamp, (date.today() - timedelta(days=1)).isoformat(), date.today().isoformat()),
+        "INSERT INTO users (id, username, display_name, joined_at, hearts_updated_at, daily_xp_date) VALUES (1, ?, ?, ?, ?, ?)",
+        ("legacy_learner", "Your Name", stamp, stamp, date.today().isoformat()),
     )
     units = [
         (1, 1, 1, "Order at a café", "#58cc02", 1),
@@ -127,7 +127,6 @@ def seed(connection: sqlite3.Connection) -> None:
         (12, 4, "Food review", "trophy", 3, 1),
     ]
     connection.executemany("INSERT INTO skills VALUES (?, ?, ?, ?, ?, ?)", skill_data)
-    connection.execute("INSERT INTO skill_progress VALUES (1, 1, 1, ?)", (stamp,))
     connection.executemany(
         "INSERT INTO lessons VALUES (?, ?, ?, 1)",
         [(i, i, skill[2]) for i, skill in enumerate(skill_data, 1)],
@@ -459,37 +458,57 @@ def sync_reference_path(connection: sqlite3.Connection) -> None:
 
 with db() as connection:
     connection.executescript(SCHEMA)
+    if "client_id" not in {row[1] for row in connection.execute("PRAGMA table_info(users)")}:
+        connection.execute("ALTER TABLE users ADD COLUMN client_id TEXT")
+    connection.execute("CREATE UNIQUE INDEX IF NOT EXISTS users_client_id_idx ON users(client_id)")
     seed(connection)
     sync_reference_path(connection)
 
 
-def refresh_user(connection: sqlite3.Connection) -> dict[str, Any]:
-    user = as_dict(connection.execute("SELECT * FROM users WHERE id = 1").fetchone())
+def learner(connection: sqlite3.Connection, client_id: str) -> int:
+    try:
+        identifier = str(UUID(client_id))
+    except (ValueError, TypeError, AttributeError):
+        raise HTTPException(400, "Invalid learner ID") from None
+    row = connection.execute("SELECT id FROM users WHERE client_id = ?", (identifier,)).fetchone()
+    if row:
+        return row["id"]
+    stamp = now().isoformat()
+    connection.execute(
+        "INSERT OR IGNORE INTO users (username, display_name, client_id, joined_at, xp, gems, hearts, hearts_updated_at, streak, daily_xp, daily_xp_date) VALUES (?, 'Your Name', ?, ?, 0, 0, 0, ?, 0, 0, ?)",
+        (f"learner_{identifier.replace('-', '')}", identifier, stamp, stamp, date.today().isoformat()),
+    )
+    return connection.execute("SELECT id FROM users WHERE client_id = ?", (identifier,)).fetchone()["id"]
+
+
+def refresh_user(connection: sqlite3.Connection, user_id: int) -> dict[str, Any]:
+    user = as_dict(connection.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone())
     assert user
     elapsed = now() - datetime.fromisoformat(user["hearts_updated_at"])
     gained = max(0, int(elapsed.total_seconds() // 1800))
-    if gained and user["hearts"] < 5:
+    has_started = connection.execute("SELECT 1 FROM lesson_sessions WHERE user_id = ? LIMIT 1", (user_id,)).fetchone()
+    if gained and user["hearts"] < 5 and has_started:
         hearts = min(5, user["hearts"] + gained)
         updated = (datetime.fromisoformat(user["hearts_updated_at"]) + timedelta(minutes=30 * gained)).isoformat()
-        connection.execute("UPDATE users SET hearts = ?, hearts_updated_at = ? WHERE id = 1", (hearts, updated))
+        connection.execute("UPDATE users SET hearts = ?, hearts_updated_at = ? WHERE id = ?", (hearts, updated, user_id))
         user["hearts"] = hearts
         user["hearts_updated_at"] = updated
     if user["daily_xp_date"] != date.today().isoformat():
-        connection.execute("UPDATE users SET daily_xp = 0, daily_xp_date = ? WHERE id = 1", (date.today().isoformat(),))
+        connection.execute("UPDATE users SET daily_xp = 0, daily_xp_date = ? WHERE id = ?", (date.today().isoformat(), user_id))
         user["daily_xp"] = 0
         user["daily_xp_date"] = date.today().isoformat()
     return user
 
 
-def path_data(connection: sqlite3.Connection) -> list[dict[str, Any]]:
+def path_data(connection: sqlite3.Connection, user_id: int) -> list[dict[str, Any]]:
     units = [dict(row) for row in connection.execute("SELECT * FROM units ORDER BY sort_order")]
     skills = [dict(row) for row in connection.execute("""
       SELECT s.*, l.id AS lesson_id, COALESCE(p.completed_lessons, 0) AS completed_lessons
       FROM skills s JOIN lessons l ON l.skill_id = s.id
       JOIN units u ON u.id = s.unit_id
-      LEFT JOIN skill_progress p ON p.skill_id = s.id AND p.user_id = 1
+      LEFT JOIN skill_progress p ON p.skill_id = s.id AND p.user_id = ?
       ORDER BY u.sort_order, s.sort_order, s.id
-    """)]
+    """, (user_id,))]
     first_incomplete = next((skill["id"] for skill in skills if skill["completed_lessons"] < skill["lesson_count"]), None)
     for skill in skills:
         skill["state"] = "completed" if skill["completed_lessons"] >= skill["lesson_count"] else ("available" if skill["id"] == first_incomplete else "locked")
@@ -504,9 +523,10 @@ def health():
 
 
 @app.get("/api/bootstrap")
-def bootstrap():
+def bootstrap(x_learner_id: str = Header(...)):
     with db() as connection:
-        user = refresh_user(connection)
+        user_id = learner(connection, x_learner_id)
+        user = refresh_user(connection, user_id)
         leaders = [
             {"name": "定", "xp": 114, "avatar": "定"},
             {"name": "Günel Günel", "xp": 111, "avatar": "G"},
@@ -514,12 +534,12 @@ def bootstrap():
             {"name": "Shruti Thakre", "xp": 89, "avatar": "S"},
             {"name": "Duo_247b49b8", "xp": 83, "avatar": "D"},
             {"name": "Pauleen Joy Bonaobra", "xp": 82, "avatar": "P"},
-            {"name": user["display_name"], "xp": user["xp"], "avatar": "N", "me": True},
+            {"name": user["display_name"], "xp": user["xp"], "avatar": user["display_name"][0].upper(), "me": True},
         ]
         leaders.sort(key=lambda person: person["xp"], reverse=True)
         return {
             "user": user,
-            "units": path_data(connection),
+            "units": path_data(connection, user_id),
             "leaderboard": leaders,
         }
 
@@ -530,19 +550,24 @@ class AnswerIn(BaseModel):
 
 
 @app.post("/api/lessons/{lesson_id}/start")
-def start_lesson(lesson_id: int):
+def start_lesson(lesson_id: int, x_learner_id: str = Header(...)):
     with db() as connection:
-        user = refresh_user(connection)
+        user_id = learner(connection, x_learner_id)
+        user = refresh_user(connection, user_id)
         skill = connection.execute("SELECT skill_id FROM lessons WHERE id = ?", (lesson_id,)).fetchone()
         if not skill:
             raise HTTPException(404, "Lesson not found")
-        state = next((s["state"] for u in path_data(connection) for s in u["skills"] if s["id"] == skill["skill_id"]), None)
+        state = next((s["state"] for u in path_data(connection, user_id) for s in u["skills"] if s["id"] == skill["skill_id"]), None)
         if state == "locked":
             raise HTTPException(403, "Complete the previous skill first")
+        first_lesson = not connection.execute("SELECT 1 FROM lesson_sessions WHERE user_id = ? LIMIT 1", (user_id,)).fetchone()
+        if user["hearts"] < 1 and first_lesson:
+            connection.execute("UPDATE users SET hearts = 5, hearts_updated_at = ? WHERE id = ?", (now().isoformat(), user_id))
+            user["hearts"] = 5
         if user["hearts"] < 1:
             raise HTTPException(403, "Out of hearts")
         session_id = str(uuid4())
-        connection.execute("INSERT INTO lesson_sessions (id, user_id, lesson_id, started_at) VALUES (?, 1, ?, ?)", (session_id, lesson_id, now().isoformat()))
+        connection.execute("INSERT INTO lesson_sessions (id, user_id, lesson_id, started_at) VALUES (?, ?, ?, ?)", (session_id, user_id, lesson_id, now().isoformat()))
         exercises = [dict(row) for row in connection.execute("SELECT id, sort_order, type, prompt, payload_json FROM exercises WHERE lesson_id = ? ORDER BY sort_order", (lesson_id,))]
         for exercise in exercises:
             exercise["payload"] = json.loads(exercise.pop("payload_json"))
@@ -567,10 +592,11 @@ def next_streak(current: int, last_active: date | None, today: date) -> tuple[in
 
 
 @app.post("/api/sessions/{session_id}/answer")
-def answer(session_id: str, submitted: AnswerIn):
+def answer(session_id: str, submitted: AnswerIn, x_learner_id: str = Header(...)):
     with db() as connection:
+        user_id = learner(connection, x_learner_id)
         session = connection.execute("SELECT * FROM lesson_sessions WHERE id = ?", (session_id,)).fetchone()
-        if not session or session["status"] != "active":
+        if not session or session["status"] != "active" or session["user_id"] != user_id:
             raise HTTPException(404, "Active lesson session not found")
         exercise = connection.execute("SELECT * FROM exercises WHERE id = ? AND lesson_id = ?", (submitted.exercise_id, session["lesson_id"])).fetchone()
         if not exercise:
@@ -590,8 +616,8 @@ def answer(session_id: str, submitted: AnswerIn):
         if correct:
             connection.execute("UPDATE lesson_sessions SET correct_count = correct_count + 1 WHERE id = ?", (session_id,))
         else:
-            connection.execute("UPDATE users SET hearts = MAX(0, hearts - 1), hearts_updated_at = ? WHERE id = 1", (now().isoformat(),))
-        user = refresh_user(connection)
+            connection.execute("UPDATE users SET hearts = MAX(0, hearts - 1), hearts_updated_at = ? WHERE id = ?", (now().isoformat(), user_id))
+        user = refresh_user(connection, user_id)
         total = connection.execute("SELECT COUNT(*) FROM exercises WHERE lesson_id = ?", (session["lesson_id"],)).fetchone()[0]
         failed = user["hearts"] == 0
         complete = answered + 1 == total and not failed
@@ -606,30 +632,47 @@ def answer(session_id: str, submitted: AnswerIn):
             accuracy = round(100 * correct_count / total)
             xp_awarded = 15 + (correct_count == total) * 5
             skill_id = connection.execute("SELECT skill_id FROM lessons WHERE id = ?", (session["lesson_id"],)).fetchone()[0]
-            connection.execute("INSERT INTO skill_progress VALUES (1, ?, 1, ?) ON CONFLICT(user_id, skill_id) DO UPDATE SET completed_lessons = 1, completed_at = excluded.completed_at", (skill_id, now().isoformat()))
+            connection.execute("INSERT INTO skill_progress VALUES (?, ?, 1, ?) ON CONFLICT(user_id, skill_id) DO UPDATE SET completed_lessons = 1, completed_at = excluded.completed_at", (user_id, skill_id, now().isoformat()))
             today = date.today()
             last = date.fromisoformat(user["last_active_date"]) if user["last_active_date"] else None
             streak, streak_advanced = next_streak(user["streak"], last, today)
-            connection.execute("UPDATE users SET xp = xp + ?, daily_xp = daily_xp + ?, streak = ?, last_active_date = ? WHERE id = 1", (xp_awarded, xp_awarded, streak, today.isoformat()))
+            connection.execute("UPDATE users SET xp = xp + ?, daily_xp = daily_xp + ?, streak = ?, last_active_date = ? WHERE id = ?", (xp_awarded, xp_awarded, streak, today.isoformat(), user_id))
             connection.execute("UPDATE lesson_sessions SET status = 'completed', finished_at = ? WHERE id = ?", (now().isoformat(), session_id))
         return {"correct": correct, "correct_answer": expected, "explanation": exercise["explanation"], "hearts": user["hearts"], "complete": complete, "failed": failed, "xp_awarded": xp_awarded, "accuracy": accuracy, "streak": streak, "streak_advanced": streak_advanced}
 
 
 @app.post("/api/practice/refill")
-def practice_refill():
+def practice_refill(x_learner_id: str = Header(...)):
     with db() as connection:
-        user = refresh_user(connection)
+        user_id = learner(connection, x_learner_id)
+        user = refresh_user(connection, user_id)
         # Mocked practice action requested by the brief: it restores one heart.
         hearts = min(5, user["hearts"] + 1)
-        connection.execute("UPDATE users SET hearts = ?, hearts_updated_at = ? WHERE id = 1", (hearts, now().isoformat()))
+        connection.execute("UPDATE users SET hearts = ?, hearts_updated_at = ? WHERE id = ?", (hearts, now().isoformat(), user_id))
         return {"hearts": hearts}
 
 
 @app.post("/api/hearts/refill")
-def gems_refill():
+def gems_refill(x_learner_id: str = Header(...)):
     with db() as connection:
-        user = refresh_user(connection)
+        user_id = learner(connection, x_learner_id)
+        user = refresh_user(connection, user_id)
         if user["gems"] < 350:
             raise HTTPException(400, "Not enough gems")
-        connection.execute("UPDATE users SET hearts = 5, gems = gems - 350, hearts_updated_at = ? WHERE id = 1", (now().isoformat(),))
+        connection.execute("UPDATE users SET hearts = 5, gems = gems - 350, hearts_updated_at = ? WHERE id = ?", (now().isoformat(), user_id))
         return {"hearts": 5, "gems": user["gems"] - 350}
+
+
+class ProfileIn(BaseModel):
+    display_name: str
+
+
+@app.patch("/api/profile")
+def update_profile(submitted: ProfileIn, x_learner_id: str = Header(...)):
+    name = " ".join(submitted.display_name.split())
+    if not 1 <= len(name) <= 40:
+        raise HTTPException(400, "Name must be between 1 and 40 characters")
+    with db() as connection:
+        user_id = learner(connection, x_learner_id)
+        connection.execute("UPDATE users SET display_name = ? WHERE id = ?", (name, user_id))
+        return {"display_name": name}

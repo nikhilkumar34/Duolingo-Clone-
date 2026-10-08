@@ -289,6 +289,25 @@ body:has(.lesson-overlay),body:has(.ceremony-overlay){overflow:hidden}
 @media(max-width:700px){.lesson-character{width:88px;height:120px}.speech-line{gap:8px}.speech-bubble{font-size:16px;padding:10px}.speech-bubble>svg{width:21px}.hard-interlude{padding:0 12px;gap:5px}.hard-interlude .owl{transform:scale(.8) translateY(34%)}.hard-interlude .combo-speech{margin-bottom:100px;font-size:15px}}
 @media(prefers-reduced-motion:reduce){.lesson-character,.lesson-character.speaking,.lesson-character.speaking .character-head,.lesson-character.speaking .character-arm,.lesson-character.speaking .character-mouth,.audio-wave b,.hard-interlude .owl{animation:none!important}}
 
+.welcome-backdrop{position:fixed;inset:0;z-index:120;background:#0b171ce8;display:grid;place-items:center;padding:20px}
+.welcome-card{position:relative;width:min(500px,100%);background:#193039;border:2px solid #425965;border-radius:28px;box-shadow:0 25px 80px #0009;text-align:center;padding:40px 42px 38px;overflow:hidden}
+.welcome-card .owl{margin:0 auto 30px;filter:drop-shadow(0 14px 0 #0e212877)}
+.welcome-card h1{font-size:34px;line-height:1.15;margin:0 0 12px}
+.welcome-card p{color:#c3d2d9;margin-bottom:28px}
+.welcome-card .duo-button{width:100%}
+.welcome-sparkle{position:absolute;color:#ffda31;font-size:36px;animation:welcome-twinkle 2s ease-in-out infinite}
+.welcome-sparkle.one{top:65px;left:58px}.welcome-sparkle.two{top:130px;right:55px;animation-delay:1s;color:#ce82ff}
+@keyframes welcome-twinkle{0%,100%{opacity:.4;transform:scale(.75) rotate(-15deg)}50%{opacity:1;transform:scale(1.15) rotate(15deg)}}
+.profile-edit-modal{text-align:left;max-width:450px}
+.profile-edit-modal h1{text-align:center;margin-top:0}
+.profile-edit-modal label{display:block;margin:25px 0 8px;font-weight:900}
+.profile-edit-modal input{width:100%;padding:15px 18px;color:var(--text);background:#0e1b20;border:2px solid var(--line);border-radius:14px;outline:none}
+.profile-edit-modal input:focus{border-color:var(--blue)}
+.profile-edit-modal .duo-button{margin-top:25px}
+.profile-error{color:var(--red)!important;font-size:15px;margin:10px 0 0}
+@media(max-width:700px){.welcome-card{padding:28px 24px}.welcome-card h1{font-size:28px}}
+@media(prefers-reduced-motion:reduce){.welcome-sparkle{animation:none}}
+
 /* The long path traces two smooth arcs through each unit. Characters sit outside it. */
 .path-unit.curve-reverse .nodes-wrap>.owl{right:auto;left:17%;top:280px}
 .path-owl-lower{position:absolute;top:970px;left:16%;pointer-events:none;opacity:.72}
