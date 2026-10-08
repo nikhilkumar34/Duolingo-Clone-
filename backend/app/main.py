@@ -76,7 +76,8 @@ CREATE TABLE IF NOT EXISTS lessons (
 CREATE TABLE IF NOT EXISTS exercises (
   id INTEGER PRIMARY KEY, lesson_id INTEGER NOT NULL REFERENCES lessons(id),
   sort_order INTEGER NOT NULL, type TEXT NOT NULL, prompt TEXT NOT NULL,
-  payload_json TEXT NOT NULL, answer_json TEXT NOT NULL, explanation TEXT NOT NULL
+  payload_json TEXT NOT NULL, answer_json TEXT NOT NULL, explanation TEXT NOT NULL,
+  is_active INTEGER NOT NULL DEFAULT 1
 );
 CREATE TABLE IF NOT EXISTS skill_progress (
   user_id INTEGER NOT NULL REFERENCES users(id), skill_id INTEGER NOT NULL REFERENCES skills(id),
@@ -161,7 +162,7 @@ def seed(connection: sqlite3.Connection) -> None:
             rows[1] = ("word_bank", "Write this in English", {"phrase": spanish.capitalize() + ".", "words": [english, "coffee", "water"]}, [english], f"‘{spanish}’ means ‘{english}’.")
         for index, (kind, prompt, payload, answer, explanation) in enumerate(rows, 1):
             connection.execute(
-                "INSERT INTO exercises VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                "INSERT INTO exercises (id, lesson_id, sort_order, type, prompt, payload_json, answer_json, explanation) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
                 (exercise_id, lesson_id, index, kind, prompt, json.dumps(payload, ensure_ascii=False), json.dumps(answer, ensure_ascii=False), explanation),
             )
             exercise_id += 1
@@ -456,13 +457,62 @@ def sync_reference_path(connection: sqlite3.Connection) -> None:
                 )
 
 
-with db() as connection:
-    connection.executescript(SCHEMA)
+def sync_first_lesson_reference(connection: sqlite3.Connection) -> None:
+    """Keep the observed Unit 1, Lesson 1 sequence in existing databases."""
+    def picture(word: str, choices: list[tuple[str, str]], answer: str):
+        return ("choice", f"Which one of these is “{word}”?",
+                {"choices": [{"label": label, "emoji": emoji} for label, emoji in choices], "tag": "NEW WORD"},
+                answer, f"{answer} means {word}.")
+
+    def meaning(word: str, choices: list[str], answer: str):
+        return ("choice", "Select the correct meaning",
+                {"mode": "meaning", "phrase": word, "choices": [{"label": choice} for choice in choices]},
+                answer, f"{answer} means {word}.")
+
+    pairs = [["cat", "gato"], ["milk", "leche"], ["mom", "mamá"], ["water", "agua"], ["dog", "perro"]]
+    rows = [
+        picture("cat", [("gato", "🐈"), ("papá", "👨"), ("agua", "💧")], "gato"),
+        picture("dog", [("papá", "👨"), ("perro", "🐕"), ("agua", "💧")], "perro"),
+        picture("water", [("gato", "🐈"), ("papá", "👨"), ("agua", "💧")], "agua"),
+        picture("milk", [("mamá", "👩"), ("gato", "🐈"), ("leche", "🥛")], "leche"),
+        ("match", "Select the matching pairs", {"pairs": pairs, "right_order": ["mamá", "perro", "gato", "leche", "agua"]}, pairs, "Correct!"),
+        meaning("dog", ["agua", "perro", "gato"], "perro"),
+        meaning("water", ["leche", "agua", "perro"], "agua"),
+        picture("mom", [("agua", "💧"), ("mamá", "👩"), ("gato", "🐈")], "mamá"),
+        picture("dad", [("gato", "🐈"), ("papá", "👨"), ("leche", "🥛")], "papá"),
+        meaning("dad", ["leche", "mamá", "papá"], "papá"),
+        meaning("cat", ["perro", "gato", "agua"], "gato"),
+        ("match", "Select the matching pairs", {"pairs": [["mom", "mamá"], ["milk", "leche"],
+                                                ["cat", "gato"], ["water", "agua"], ["dog", "perro"]],
+                                                "right_order": ["perro", "agua", "leche", "gato", "mamá"]},
+         [["mom", "mamá"], ["milk", "leche"], ["cat", "gato"], ["water", "agua"], ["dog", "perro"]], "Nice!"),
+    ]
+    rows[0][2]["reference_lesson"] = True
+    for order, (kind, prompt, payload, expected, explanation) in enumerate(rows, 1):
+        connection.execute(
+            "UPDATE exercises SET type = ?, prompt = ?, payload_json = ?, answer_json = ?, explanation = ?, is_active = 1 "
+            "WHERE lesson_id = 1 AND sort_order = ?",
+            (kind, prompt, json.dumps(payload, ensure_ascii=False), json.dumps(expected, ensure_ascii=False),
+             explanation, order),
+        )
+    # Preserve old answer records while hiding the former thirteenth question.
+    connection.execute("UPDATE exercises SET is_active = 0 WHERE lesson_id = 1 AND sort_order > 12")
+
+
+def migrate_schema(connection: sqlite3.Connection) -> None:
+    if "is_active" not in {row[1] for row in connection.execute("PRAGMA table_info(exercises)")}:
+        connection.execute("ALTER TABLE exercises ADD COLUMN is_active INTEGER NOT NULL DEFAULT 1")
     if "client_id" not in {row[1] for row in connection.execute("PRAGMA table_info(users)")}:
         connection.execute("ALTER TABLE users ADD COLUMN client_id TEXT")
     connection.execute("CREATE UNIQUE INDEX IF NOT EXISTS users_client_id_idx ON users(client_id)")
+
+
+with db() as connection:
+    connection.executescript(SCHEMA)
+    migrate_schema(connection)
     seed(connection)
     sync_reference_path(connection)
+    sync_first_lesson_reference(connection)
 
 
 def learner(connection: sqlite3.Connection, client_id: str) -> int:
@@ -568,7 +618,7 @@ def start_lesson(lesson_id: int, x_learner_id: str = Header(...)):
             raise HTTPException(403, "Out of hearts")
         session_id = str(uuid4())
         connection.execute("INSERT INTO lesson_sessions (id, user_id, lesson_id, started_at) VALUES (?, ?, ?, ?)", (session_id, user_id, lesson_id, now().isoformat()))
-        exercises = [dict(row) for row in connection.execute("SELECT id, sort_order, type, prompt, payload_json FROM exercises WHERE lesson_id = ? ORDER BY sort_order", (lesson_id,))]
+        exercises = [dict(row) for row in connection.execute("SELECT id, sort_order, type, prompt, payload_json FROM exercises WHERE lesson_id = ? AND is_active = 1 ORDER BY sort_order", (lesson_id,))]
         for exercise in exercises:
             exercise["payload"] = json.loads(exercise.pop("payload_json"))
         return {"session_id": session_id, "exercises": exercises, "hearts": user["hearts"]}
@@ -618,7 +668,7 @@ def answer(session_id: str, submitted: AnswerIn, x_learner_id: str = Header(...)
         else:
             connection.execute("UPDATE users SET hearts = MAX(0, hearts - 1), hearts_updated_at = ? WHERE id = ?", (now().isoformat(), user_id))
         user = refresh_user(connection, user_id)
-        total = connection.execute("SELECT COUNT(*) FROM exercises WHERE lesson_id = ?", (session["lesson_id"],)).fetchone()[0]
+        total = connection.execute("SELECT COUNT(*) FROM exercises WHERE lesson_id = ? AND is_active = 1", (session["lesson_id"],)).fetchone()[0]
         failed = user["hearts"] == 0
         complete = answered + 1 == total and not failed
         xp_awarded = 0

@@ -181,9 +181,11 @@ function LessonPlayer({ lesson, onClose, onFinish, onHeartChange }: { lesson: Le
   }, [index]);
   const exercise = lesson.exercises[index];
   const payload = exercise?.payload || {};
+  const isReferenceLesson = lesson.exercises[0]?.payload.reference_lesson === true;
   const options = (payload.choices || []) as { label: string; emoji?: string }[];
   const wordOptions = (payload.words || []) as string[];
   const matchPairs = (payload.pairs || []) as [string, string][];
+  const matchRight = (payload.right_order || [...matchPairs].reverse().map(([, right]) => right)) as string[];
   const matched = (word: string) => pairs.some(pair => pair.includes(word));
   const phrase = String(payload.phrase || "");
   const language = exercise.type === "word_bank" ? "es-ES" : "en-US";
@@ -198,17 +200,21 @@ function LessonPlayer({ lesson, onClose, onFinish, onHeartChange }: { lesson: Le
 
   function choosePicture(label: string) {
     setSelected(label);
+    speakOption(label, "es-ES");
+  }
+
+  function speakOption(label: string, spokenLanguage: "es-ES" | "en-US") {
     choiceAudioRef.current?.pause();
     pronunciationRef.current?.pause();
     window.speechSynthesis?.cancel();
     const fallback = () => {
       if (!("speechSynthesis" in window)) return;
       const utterance = new SpeechSynthesisUtterance(label);
-      utterance.lang = "es-ES";
+      utterance.lang = spokenLanguage;
       utterance.rate = 0.85;
       window.speechSynthesis.speak(utterance);
     };
-    const source = pronunciationSource(label, "es-ES");
+    const source = pronunciationSource(label, spokenLanguage);
     if (!source) { fallback(); return; }
     const audio = choiceAudioRef.current;
     if (!audio) { fallback(); return; }
@@ -238,6 +244,7 @@ function LessonPlayer({ lesson, onClose, onFinish, onHeartChange }: { lesson: Le
   function reset() { setSelected(null); setWords([]); setTyped(""); setPairs([]); setPairFirst(null); setPairFlash(null); setFeedback(null); setError(""); }
   function choosePair(word: string, side: "left" | "right") {
     if (matched(word)) return;
+    speakOption(word, side === "right" ? "es-ES" : "en-US");
     if (side === "left") { playEffect("tap"); setPairFirst(word); return; }
     if (!pairFirst) return;
     const valid = matchPairs.some(([left, right]) => left === pairFirst && right === word);
@@ -257,18 +264,25 @@ function LessonPlayer({ lesson, onClose, onFinish, onHeartChange }: { lesson: Le
     } catch (err) { setError(err instanceof Error ? err.message : "Could not check answer"); }
     finally { setBusy(false); }
   }
+  useEffect(() => {
+    if (isReferenceLesson && exercise.type === "match" && pairs.length === matchPairs.length && !feedback && !busy) {
+      void check();
+    }
+  // Trigger once the last pair has been matched, using the updated answer state.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pairs.length]);
   function next() {
     if (!feedback) return;
     if (feedback.complete || feedback.failed) { if (feedback.complete) playEffect("complete"); onFinish(feedback); return; }
     if (!interlude && (combo === 5 || combo === 10)) { playEffect("combo"); setInterlude("combo"); return; }
-    if (!interlude && index + 1 === lesson.exercises.length - 1) { setInterlude("hard"); return; }
+    if (!isReferenceLesson && !interlude && index + 1 === lesson.exercises.length - 1) { setInterlude("hard"); return; }
     setIndex(index + 1); reset();
     setInterlude(null);
   }
-  return <div className={`lesson-overlay ${combo >= 10 ? "hot-combo" : combo >= 5 ? "warm-combo" : ""}`}><audio ref={pronunciationRef} src={pronunciation ?? undefined} preload="auto" onEnded={() => setSpeaking(false)} onPause={() => setSpeaking(false)} /><audio ref={choiceAudioRef} preload="none" /><div className="lesson-top"><button onClick={onClose} aria-label="Exit lesson"><X size={29} /></button><div className="lesson-progress-wrap">{combo >= 2 && <span className="combo-label">{combo} IN A ROW</span>}<div className="lesson-progress"><div style={{ width: `${((index + (feedback ? 1 : 0)) / lesson.exercises.length) * 100}%` }} /></div></div><div className="lesson-hearts"><Heart fill="currentColor" /> {hearts}</div></div>{interlude ? <div className={`combo-interlude ${interlude === "hard" ? "hard-interlude" : ""}`}>{interlude === "combo" && <><div className="combo-burst burst-a">✦</div><div className="combo-burst burst-b">✦</div></>}<Owl size="large" /><div className="combo-speech">{interlude === "hard" ? "Try the hardest exercises from this level!" : combo === 10 ? "Outstanding! 10 in a row!" : "Cool! 5 in a row!"}</div></div> : <div className="lesson-content" ref={contentRef}><div className="lesson-label">{exercise.type === "choice" && index === 0 ? "✦ NEW WORD" : index >= Math.floor(lesson.exercises.length * .75) ? "◆ HARD EXERCISE" : `LESSON ${index + 1} OF ${lesson.exercises.length}`}</div><h1>{exercise.prompt}</h1>
-    {exercise.type === "choice" && <div className="choice-grid">{options.map((option, i) => <button className={`choice-card ${selected === option.label ? "chosen" : ""}`} aria-pressed={selected === option.label} key={option.label} onClick={() => choosePicture(option.label)}><span>{option.emoji}</span><div>{option.label}<small>{i + 1}</small></div></button>)}</div>}
+  return <div className={`lesson-overlay ${isReferenceLesson ? "reference-lesson" : ""} ${combo >= 10 ? "hot-combo" : combo >= 5 ? "warm-combo" : ""}`}><audio ref={pronunciationRef} src={pronunciation ?? undefined} preload="auto" onEnded={() => setSpeaking(false)} onPause={() => setSpeaking(false)} /><audio ref={choiceAudioRef} preload="none" /><div className="lesson-top"><button onClick={onClose} aria-label="Exit lesson"><X size={29} /></button><div className="lesson-progress-wrap">{combo >= 2 && <span className="combo-label">{combo} IN A ROW</span>}<div className="lesson-progress"><div style={{ width: `${((index + (feedback ? 1 : 0)) / lesson.exercises.length) * 100}%` }} /></div></div><div className="lesson-hearts"><Heart fill="currentColor" /> {hearts}</div></div>{interlude ? <div className={`combo-interlude ${interlude === "hard" ? "hard-interlude" : ""}`}>{interlude === "combo" && <><div className="combo-burst burst-a">✦</div><div className="combo-burst burst-b">✦</div></>}<Owl size="large" /><div className="combo-speech">{interlude === "hard" ? "Try the hardest exercises from this level!" : isReferenceLesson ? (combo === 10 ? "Good effort!" : "Awesome! You're working hard and learning new words!") : combo === 10 ? "Outstanding! 10 in a row!" : "Cool! 5 in a row!"}</div></div> : <div className="lesson-content" ref={contentRef}><div className="lesson-label">{payload.tag === "NEW WORD" ? "✦ NEW WORD" : isReferenceLesson ? "" : index >= Math.floor(lesson.exercises.length * .75) ? "◆ HARD EXERCISE" : `LESSON ${index + 1} OF ${lesson.exercises.length}`}</div><h1>{exercise.prompt}</h1>
+    {exercise.type === "choice" && (payload.mode === "meaning" ? <><div className="meaning-prompt">{phrase}</div><div className="meaning-choices">{options.map((option, i) => <button className={selected === option.label ? "chosen" : ""} aria-pressed={selected === option.label} key={option.label} onClick={() => choosePicture(option.label)}><small>{i + 1}</small>{option.label}</button>)}</div></> : <div className="choice-grid">{options.map((option, i) => <button className={`choice-card ${selected === option.label ? "chosen" : ""}`} aria-pressed={selected === option.label} key={option.label} onClick={() => choosePicture(option.label)}><span>{option.emoji}</span><div>{option.label}<small>{i + 1}</small></div></button>)}</div>)}
     {exercise.type === "word_bank" && <><div className="speech-line"><LessonCharacter speaking={speaking} /><button type="button" className={`speech-bubble ${speaking ? "speaking" : ""}`} onClick={speak} aria-label={`Play pronunciation: ${phrase}`}><Volume2 size={25} /><span>{phrase}</span><i className="audio-wave" aria-hidden="true"><b /><b /><b /></i></button></div><div className="word-answer">{words.map((wordIndex, pos) => <button key={`${wordIndex}-${pos}`} onClick={() => { playEffect("tap"); setWords(words.filter((_, i) => i !== pos)); }}>{wordOptions[wordIndex]}</button>)}</div><div className="word-options">{wordOptions.map((word, i) => <button disabled={words.includes(i)} key={i} onClick={() => { playEffect("tap"); setWords([...words, i]); }}>{word}</button>)}</div></>}
-    {exercise.type === "match" && <div className="match-grid"><div>{matchPairs.map(([left]) => <button className={`${matched(left) ? "matched" : ""} ${pairFirst === left ? "chosen" : ""}`} key={left} onClick={() => choosePair(left, "left")}>{left}</button>)}</div><div>{[...matchPairs].reverse().map(([, right]) => <button className={`${matched(right) ? "matched" : ""} ${pairFlash === right ? "wrong" : ""}`} key={right} onClick={() => choosePair(right, "right")}>{right}</button>)}</div></div>}
+    {exercise.type === "match" && <div className="match-grid"><div>{matchPairs.map(([left]) => <button className={`${matched(left) ? "matched" : ""} ${pairFirst === left ? "chosen" : ""}`} key={left} onClick={() => choosePair(left, "left")}>{left}</button>)}</div><div>{matchRight.map(right => <button className={`${matched(right) ? "matched" : ""} ${pairFlash === right ? "wrong" : ""}`} key={right} onClick={() => choosePair(right, "right")}>{right}</button>)}</div></div>}
     {exercise.type === "fill_blank" && <div className="fill-exercise"><p>{String(payload.translation)}</p><div className="blank-sentence">{String(payload.before)} <span>{selected || "________"}</span>{String(payload.after)}</div><div className="fill-options">{((payload.choices || []) as string[]).map(word => <button key={word} onClick={() => setSelected(word)} className={selected === word ? "chosen" : ""}>{word}</button>)}</div></div>}
     {exercise.type === "type" && <div className="type-exercise"><div className="speech-line"><LessonCharacter speaking={speaking} /><button type="button" className={`speech-bubble ${speaking ? "speaking" : ""}`} onClick={speak} aria-label={`Play pronunciation: ${phrase}`}><Volume2 size={25} /><span>{phrase}</span><i className="audio-wave" aria-hidden="true"><b /><b /><b /></i></button></div><textarea aria-label="Type your answer" placeholder={String(payload.placeholder || "Type your answer")} value={typed} onChange={event => setTyped(event.target.value)} /></div>}
     {error && <div className="inline-error">{error}</div>}

@@ -133,6 +133,15 @@ h1,h2,h3{letter-spacing:-.035em}
 .path-header-sticky{position:sticky;top:0;z-index:6;background:var(--bg);padding-top:28px;margin-top:-28px}
 .path-header-sticky .unit-header{position:relative;top:auto;z-index:auto}
 .path-unit.fresh-start .nodes-wrap{padding-top:82px}
+.lesson-label:empty{display:none}
+.meaning-prompt{font-size:27px;font-weight:700;margin:-10px 0 30px;color:var(--text)}
+.meaning-choices{display:flex;flex-direction:column;gap:12px;max-width:650px}
+.meaning-choices button{height:68px;display:flex;align-items:center;gap:18px;padding:0 20px;border:2px solid var(--line);border-bottom-width:5px;border-radius:16px;background:transparent;color:var(--text);font-size:21px;font-weight:700;text-align:left}
+.meaning-choices button:hover,.meaning-choices button.chosen{background:#17313e;border-color:#48c2f0}
+.meaning-choices small{display:grid;place-items:center;border:2px solid var(--line);border-radius:7px;width:32px;height:32px;color:#708993;font-size:15px}
+.reference-lesson .match-grid{gap:12px}
+.reference-lesson .match-grid>div{gap:8px}
+.reference-lesson .match-grid button{height:clamp(48px,7dvh,65px);min-height:0}
 @media (min-width:1121px) and (max-width:1550px){.path-header-sticky{padding-top:23px;margin-top:-23px}}
 @media (min-width:1121px) and (max-width:1550px){.path-unit.fresh-start .nodes-wrap{padding-top:75px}}
 @media (max-width:1120px){.path-header-sticky{padding-top:20px;margin-top:-20px}}

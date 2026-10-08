@@ -18,6 +18,7 @@ class LessonFlowTest(unittest.TestCase):
             connection.executescript(main.SCHEMA)
             main.seed(connection)
             main.sync_reference_path(connection)
+            main.sync_first_lesson_reference(connection)
 
     def tearDown(self):
         main.DB_PATH = self.original_path
@@ -35,11 +36,18 @@ class LessonFlowTest(unittest.TestCase):
         self.assertTrue(all(len(unit["skills"]) == 11 for unit in initial["units"]))
         started = main.start_lesson(1, x_learner_id=self.learner_id)
         self.assertEqual(started["hearts"], 5)
-        self.assertEqual(len(started["exercises"]), 13)
-        self.assertEqual(started["exercises"][-1]["payload"]["phrase"], "Quiero un helado y un vaso de agua.")
+        self.assertEqual(len(started["exercises"]), 12)
+        self.assertEqual(started["exercises"][0]["prompt"], "Which one of these is “cat”?")
+        self.assertEqual([exercise["prompt"] for exercise in started["exercises"][:5]], [
+            "Which one of these is “cat”?", "Which one of these is “dog”?",
+            "Which one of these is “water”?", "Which one of these is “milk”?",
+            "Select the matching pairs",
+        ])
+        self.assertEqual(started["exercises"][5]["payload"]["mode"], "meaning")
+        self.assertEqual(started["exercises"][-1]["payload"]["pairs"][0], ["mom", "mamá"])
         with main.db() as connection:
             answers = [main.json.loads(row[0]) for row in connection.execute(
-                "SELECT answer_json FROM exercises WHERE lesson_id = 1 ORDER BY sort_order"
+                "SELECT answer_json FROM exercises WHERE lesson_id = 1 AND is_active = 1 ORDER BY sort_order"
             )]
         for exercise, answer in zip(started["exercises"], answers):
             result = main.answer(started["session_id"], main.AnswerIn(exercise_id=exercise["id"], answer=answer), x_learner_id=self.learner_id)
@@ -59,7 +67,7 @@ class LessonFlowTest(unittest.TestCase):
             started = main.start_lesson(lesson_id, x_learner_id=self.learner_id)
             with main.db() as connection:
                 answers = [main.json.loads(row[0]) for row in connection.execute(
-                    "SELECT answer_json FROM exercises WHERE lesson_id = ? ORDER BY sort_order", (lesson_id,)
+                    "SELECT answer_json FROM exercises WHERE lesson_id = ? AND is_active = 1 ORDER BY sort_order", (lesson_id,)
                 )]
             for exercise, answer in zip(started["exercises"], answers):
                 result = main.answer(started["session_id"], main.AnswerIn(exercise_id=exercise["id"], answer=answer), x_learner_id=self.learner_id)
@@ -90,7 +98,7 @@ class LessonFlowTest(unittest.TestCase):
         started = main.start_lesson(1, x_learner_id=self.learner_id)
         with main.db() as connection:
             answers = [main.json.loads(row[0]) for row in connection.execute(
-                "SELECT answer_json FROM exercises WHERE lesson_id = 1 ORDER BY sort_order"
+                "SELECT answer_json FROM exercises WHERE lesson_id = 1 AND is_active = 1 ORDER BY sort_order"
             )]
         for exercise, answer in zip(started["exercises"], answers):
             first = main.answer(started["session_id"], main.AnswerIn(exercise_id=exercise["id"], answer=answer), x_learner_id=self.learner_id)
@@ -122,6 +130,22 @@ class LessonFlowTest(unittest.TestCase):
             after = [connection.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]
                      for table in ("units", "skills", "lessons", "exercises")]
         self.assertEqual(before, after)
+
+    def test_existing_exercise_database_migrates_without_losing_history(self):
+        with main.db() as connection:
+            original_ids = [row[0] for row in connection.execute(
+                "SELECT id FROM exercises WHERE lesson_id = 1 ORDER BY sort_order"
+            )]
+            connection.execute("ALTER TABLE exercises DROP COLUMN is_active")
+            main.migrate_schema(connection)
+            main.sync_first_lesson_reference(connection)
+            active_ids = [row[0] for row in connection.execute(
+                "SELECT id FROM exercises WHERE lesson_id = 1 AND is_active = 1 ORDER BY sort_order"
+            )]
+            self.assertEqual(active_ids, original_ids[:12])
+            self.assertEqual(connection.execute(
+                "SELECT COUNT(*) FROM exercises WHERE lesson_id = 1"
+            ).fetchone()[0], 13)
 
 
 if __name__ == "__main__":
