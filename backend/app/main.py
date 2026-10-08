@@ -540,7 +540,8 @@ def sync_second_lesson_reference(connection: sqlite3.Connection) -> None:
 
 def sync_observed_lesson(connection: sqlite3.Connection, number: int, lesson_id: int, title: str) -> None:
     """Apply the captured sequence while preserving exercise IDs and learner progress."""
-    reference = json.loads((Path(__file__).parent / "references" / "duolingo-unit1-lessons-3-4.json").read_text(encoding="utf-8"))
+    reference_file = "duolingo-unit1-lessons-3-4.json" if number <= 4 else "duolingo-unit1-lessons-5-6.json"
+    reference = json.loads((Path(__file__).parent / "references" / reference_file).read_text(encoding="utf-8"))
     rows = reference["lessons"][str(number)]
     pictures = reference["artwork"]
     fallback = {"libro": "📖", "verde": "🟢", "mamá": "👩‍🍼"}
@@ -554,7 +555,7 @@ def sync_observed_lesson(connection: sqlite3.Connection, number: int, lesson_id:
                                   for label in row["choices"]]
         if order == 1:
             payload.update(reference_lesson=True, combo_interludes=[5, 10] if number == 3 else [])
-            if number == 4:
+            if number >= 4:
                 payload.update(hard_interlude_before=13, hard_interlude_message="Great work! Let's make this a bit harder...")
         expected = row.get("answer", row.get("pairs"))
         explanation = " ".join(expected) if row["type"] == "word_bank" else "Correct!" if row["type"] == "match" else expected
@@ -579,53 +580,11 @@ def sync_fourth_lesson_reference(connection: sqlite3.Connection) -> None:
 
 
 def sync_fifth_lesson_reference(connection: sqlite3.Connection) -> None:
-    """Keep Unit 1, Lesson 5 as a complete water-ordering lesson."""
-    def picture(word: str, choices: list[tuple[str, str]], answer: str):
-        return ("choice", f"Which one of these is “{word}”?",
-                {"choices": [{"label": label, "emoji": emoji} for label, emoji in choices], "tag": "NEW WORD"},
-                answer, f"{answer} means {word}.")
+    sync_observed_lesson(connection, 5, 41, "Order tacos and sandwiches")
 
-    def meaning(word: str, choices: list[str], answer: str):
-        return ("choice", "Select the correct meaning",
-                {"mode": "meaning", "phrase": word, "choices": [{"label": choice} for choice in choices]},
-                answer, f"{answer} means {word}.")
 
-    pairs = [["water", "agua"], ["glass", "vaso"], ["ice", "hielo"], ["milk", "leche"], ["coffee", "café"]]
-    rows = [
-        picture("water", [("agua", "💧"), ("vaso", "🥛"), ("hielo", "🧊")], "agua"),
-        picture("glass", [("café", "☕"), ("vaso", "🥛"), ("agua", "💧")], "vaso"),
-        picture("ice", [("leche", "🥛"), ("hielo", "🧊"), ("agua", "💧")], "hielo"),
-        ("match", "Select the matching pairs", {"pairs": pairs,
-         "right_order": ["vaso", "café", "agua", "leche", "hielo"]}, pairs, "Correct!"),
-        meaning("water", ["agua", "vaso", "hielo"], "agua"),
-        ("word_bank", "Write this in English", {"phrase": "Agua, por favor.",
-         "words": ["Water", "please", "coffee", "tea"]}, ["Water", "please"], "Agua means water."),
-        picture("a glass of water", [("un vaso de agua", "🥛"), ("un café", "☕"), ("un té", "🍵")], "un vaso de agua"),
-        meaning("glass", ["vaso", "agua", "café"], "vaso"),
-        ("word_bank", "Write this in English", {"phrase": "Quiero un vaso de agua.",
-         "words": ["I", "want", "a", "glass", "of", "water", "coffee"]},
-         ["I", "want", "a", "glass", "of", "water"], "Quiero un vaso de agua means I want a glass of water."),
-        ("match", "Select the matching pairs", {"pairs": [["water", "agua"], ["glass", "vaso"],
-         ["ice", "hielo"], ["milk", "leche"]], "right_order": ["hielo", "agua", "leche", "vaso"]},
-         [["water", "agua"], ["glass", "vaso"], ["ice", "hielo"], ["milk", "leche"]], "Nice!"),
-        meaning("ice", ["hielo", "leche", "agua"], "hielo"),
-        ("word_bank", "Write this in English", {"phrase": "Un vaso, por favor.",
-         "words": ["a", "glass", "please", "water"]}, ["a", "glass", "please"], "Un vaso means a glass."),
-    ]
-    rows[0][2]["reference_lesson"] = True
-    for order, (kind, prompt, payload, expected, explanation) in enumerate(rows, 1):
-        updated = connection.execute(
-            "UPDATE exercises SET type = ?, prompt = ?, payload_json = ?, answer_json = ?, explanation = ?, is_active = 1 "
-            "WHERE lesson_id = 41 AND sort_order = ?",
-            (kind, prompt, json.dumps(payload, ensure_ascii=False), json.dumps(expected, ensure_ascii=False), explanation, order),
-        )
-        if updated.rowcount == 0:
-            connection.execute(
-                "INSERT INTO exercises (lesson_id, sort_order, type, prompt, payload_json, answer_json, explanation, is_active) "
-                "VALUES (?, ?, ?, ?, ?, ?, ?, 1)",
-                (41, order, kind, prompt, json.dumps(payload, ensure_ascii=False), json.dumps(expected, ensure_ascii=False), explanation),
-            )
-    connection.execute("UPDATE exercises SET is_active = 0 WHERE lesson_id = 41 AND sort_order > 12")
+def sync_sixth_lesson_reference(connection: sqlite3.Connection) -> None:
+    sync_observed_lesson(connection, 6, 42, "Order with sugar and say goodbye")
 
 
 def migrate_schema(connection: sqlite3.Connection) -> None:
@@ -646,6 +605,7 @@ with db() as connection:
     sync_third_lesson_reference(connection)
     sync_fourth_lesson_reference(connection)
     sync_fifth_lesson_reference(connection)
+    sync_sixth_lesson_reference(connection)
 
 
 def learner(connection: sqlite3.Connection, client_id: str) -> int:

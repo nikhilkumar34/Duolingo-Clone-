@@ -1,0 +1,568 @@
+{
+  "source": "Observed in the user-supplied signed-in Spanish course, Section 1 Unit 1",
+  "captured_on": "2026-10-08",
+  "source_positions": {
+    "5": "Second node, Lesson 2 of 4",
+    "6": "Second node, Lesson 3 of 4"
+  },
+  "lessons": {
+    "5": [
+      {
+        "type": "choice",
+        "prompt": "Which one of these is “taco”?",
+        "tag": "NEW WORD",
+        "choices": [
+          "taco",
+          "un sándwich",
+          "té"
+        ],
+        "answer": "taco"
+      },
+      {
+        "type": "word_bank",
+        "prompt": "Write this in English",
+        "phrase": "Un taco, por favor.",
+        "words": [
+          "or",
+          "please",
+          "taco",
+          "A"
+        ],
+        "answer": [
+          "A",
+          "taco",
+          "please"
+        ]
+      },
+      {
+        "type": "choice",
+        "prompt": "Which one of these is “sandwich”?",
+        "tag": "NEW WORD",
+        "choices": [
+          "café",
+          "taco",
+          "un sándwich"
+        ],
+        "answer": "un sándwich"
+      },
+      {
+        "type": "word_bank",
+        "prompt": "Write this in English",
+        "phrase": "Un sándwich.",
+        "words": [
+          "or",
+          "A",
+          "sandwich"
+        ],
+        "answer": [
+          "A",
+          "sandwich"
+        ]
+      },
+      {
+        "type": "word_bank",
+        "prompt": "Write this in English",
+        "tag": "NEW WORD",
+        "phrase": "gracias",
+        "words": [
+          "coffee",
+          "you",
+          "thank"
+        ],
+        "answer": [
+          "thank",
+          "you"
+        ]
+      },
+      {
+        "type": "choice",
+        "mode": "meaning",
+        "prompt": "Select the correct meaning",
+        "phrase": "thank you",
+        "choices": [
+          "agua",
+          "gracias",
+          "café"
+        ],
+        "answer": "gracias"
+      },
+      {
+        "type": "word_bank",
+        "prompt": "Write this in English",
+        "tag": "NEW WORD",
+        "phrase": "Quiero agua.",
+        "words": [
+          "want",
+          "milk",
+          "I",
+          "water"
+        ],
+        "answer": [
+          "I",
+          "want",
+          "water"
+        ]
+      },
+      {
+        "type": "word_bank",
+        "prompt": "Write this in English",
+        "tag": "NEW WORD",
+        "phrase": "agua con hielo",
+        "words": [
+          "ice",
+          "coffee",
+          "water",
+          "with"
+        ],
+        "answer": [
+          "water",
+          "with",
+          "ice"
+        ]
+      },
+      {
+        "type": "word_bank",
+        "prompt": "Write this in English",
+        "phrase": "Quiero un té con hielo, por favor.",
+        "words": [
+          "please",
+          "a",
+          "want",
+          "tea",
+          "ice",
+          "I",
+          "or",
+          "with"
+        ],
+        "answer": [
+          "I",
+          "want",
+          "a",
+          "tea",
+          "with",
+          "ice",
+          "please"
+        ]
+      },
+      {
+        "type": "word_bank",
+        "prompt": "Write this in English",
+        "tag": "NEW WORD",
+        "phrase": "Hola, ¿quieres un taco?",
+        "words": [
+          "Hello",
+          "want",
+          "a",
+          "do",
+          "thank you",
+          "you",
+          "taco"
+        ],
+        "answer": [
+          "Hello",
+          "do",
+          "you",
+          "want",
+          "a",
+          "taco"
+        ]
+      },
+      {
+        "type": "word_bank",
+        "prompt": "Write this in English",
+        "phrase": "Hola, ¿quieres un café con leche?",
+        "words": [
+          "Hello",
+          "coffee",
+          "want",
+          "do",
+          "you",
+          "a",
+          "milk",
+          "with",
+          "ice cream"
+        ],
+        "answer": [
+          "Hello",
+          "do",
+          "you",
+          "want",
+          "a",
+          "coffee",
+          "with",
+          "milk"
+        ]
+      },
+      {
+        "type": "word_bank",
+        "prompt": "Write this in English",
+        "tag": "NEW WORD",
+        "phrase": "¿Quieres un té o un café?",
+        "words": [
+          "tea",
+          "you",
+          "water",
+          "Do",
+          "coffee",
+          "a",
+          "want",
+          "or",
+          "a"
+        ],
+        "answer": [
+          "Do",
+          "you",
+          "want",
+          "a",
+          "tea",
+          "or",
+          "a",
+          "coffee"
+        ]
+      },
+      {
+        "type": "word_bank",
+        "prompt": "Write this in Spanish",
+        "tag": "HARD EXERCISE",
+        "phrase": "A tea or a coffee?",
+        "words": [
+          "café",
+          "perfecto",
+          "o",
+          "té",
+          "Un",
+          "un"
+        ],
+        "answer": [
+          "Un",
+          "té",
+          "o",
+          "un",
+          "café"
+        ]
+      },
+      {
+        "type": "word_bank",
+        "prompt": "Write this in Spanish",
+        "tag": "HARD EXERCISE",
+        "phrase": "A coffee or a tea?",
+        "words": [
+          "café",
+          "té",
+          "o",
+          "Un",
+          "sándwich",
+          "un"
+        ],
+        "answer": [
+          "Un",
+          "café",
+          "o",
+          "un",
+          "té"
+        ]
+      },
+      {
+        "type": "word_bank",
+        "prompt": "Write this in Spanish",
+        "tag": "HARD EXERCISE",
+        "phrase": "A sandwich or a taco?",
+        "words": [
+          "o",
+          "un",
+          "helado",
+          "taco",
+          "Un",
+          "sándwich"
+        ],
+        "answer": [
+          "Un",
+          "sándwich",
+          "o",
+          "un",
+          "taco"
+        ]
+      }
+    ],
+    "6": [
+      {
+        "type": "choice",
+        "prompt": "Which one of these is “ice cream”?",
+        "tag": "NEW WORD",
+        "choices": [
+          "taco",
+          "café",
+          "helado"
+        ],
+        "answer": "helado"
+      },
+      {
+        "type": "choice",
+        "mode": "meaning",
+        "prompt": "Select the correct meaning",
+        "phrase": "ice cream",
+        "choices": [
+          "helado",
+          "agua",
+          "perfecto"
+        ],
+        "answer": "helado"
+      },
+      {
+        "type": "word_bank",
+        "prompt": "Write this in English",
+        "tag": "NEW WORD",
+        "phrase": "Chao.",
+        "words": [
+          "an",
+          "Bye"
+        ],
+        "answer": [
+          "Bye"
+        ]
+      },
+      {
+        "type": "word_bank",
+        "prompt": "Write this in English",
+        "phrase": "¡Chao!",
+        "words": [
+          "sandwich",
+          "Bye"
+        ],
+        "answer": [
+          "Bye"
+        ]
+      },
+      {
+        "type": "word_bank",
+        "prompt": "Write this in English",
+        "tag": "NEW WORD",
+        "phrase": "Perfecto.",
+        "words": [
+          "Perfect",
+          "hello"
+        ],
+        "answer": [
+          "Perfect"
+        ]
+      },
+      {
+        "type": "word_bank",
+        "prompt": "Write this in English",
+        "tag": "NEW WORD",
+        "phrase": "Quiero pan.",
+        "words": [
+          "milk",
+          "I",
+          "want",
+          "bread"
+        ],
+        "answer": [
+          "I",
+          "want",
+          "bread"
+        ]
+      },
+      {
+        "type": "fill_blank",
+        "prompt": "Fill in the blank",
+        "before": "Perfecto, un ",
+        "after": ". ¡Chao!",
+        "choices": [
+          "café",
+          "o",
+          "y",
+          "gracias"
+        ],
+        "answer": "café",
+        "image": "https://d2pur3iezf4d1j.cloudfront.net/images/efe6a1dd3ae3bedfe1f1345dd806d273"
+      },
+      {
+        "type": "word_bank",
+        "prompt": "Write this in English",
+        "tag": "NEW WORD",
+        "phrase": "un té con azúcar",
+        "words": [
+          "with",
+          "sugar",
+          "a",
+          "water",
+          "tea"
+        ],
+        "answer": [
+          "a",
+          "tea",
+          "with",
+          "sugar"
+        ]
+      },
+      {
+        "type": "word_bank",
+        "prompt": "Write this in English",
+        "phrase": "¿Quieres pan?",
+        "words": [
+          "you",
+          "want",
+          "bread",
+          "glass",
+          "Do"
+        ],
+        "answer": [
+          "Do",
+          "you",
+          "want",
+          "bread"
+        ]
+      },
+      {
+        "type": "word_bank",
+        "prompt": "Write this in English",
+        "tag": "NEW WORD",
+        "phrase": "¿Quieres un vaso de agua?",
+        "words": [
+          "water",
+          "a",
+          "of",
+          "cream",
+          "want",
+          "you",
+          "glass",
+          "Do"
+        ],
+        "answer": [
+          "Do",
+          "you",
+          "want",
+          "a",
+          "glass",
+          "of",
+          "water"
+        ]
+      },
+      {
+        "type": "word_bank",
+        "prompt": "Write this in English",
+        "phrase": "un café con azúcar",
+        "words": [
+          "coffee",
+          "with",
+          "a",
+          "do",
+          "sugar"
+        ],
+        "answer": [
+          "a",
+          "coffee",
+          "with",
+          "sugar"
+        ]
+      },
+      {
+        "type": "word_bank",
+        "prompt": "Write this in English",
+        "tag": "NEW WORD",
+        "phrase": "un sándwich y un café con azúcar",
+        "words": [
+          "a",
+          "sandwich",
+          "and",
+          "with",
+          "sugar",
+          "a",
+          "coffee",
+          "ice cream"
+        ],
+        "answer": [
+          "a",
+          "sandwich",
+          "and",
+          "a",
+          "coffee",
+          "with",
+          "sugar"
+        ]
+      },
+      {
+        "type": "word_bank",
+        "prompt": "Write this in Spanish",
+        "tag": "HARD EXERCISE",
+        "phrase": "A coffee and an ice cream.",
+        "words": [
+          "helado",
+          "Un",
+          "y",
+          "café",
+          "con leche",
+          "un"
+        ],
+        "answer": [
+          "Un",
+          "café",
+          "y",
+          "un",
+          "helado"
+        ]
+      },
+      {
+        "type": "word_bank",
+        "prompt": "Write this in Spanish",
+        "tag": "HARD EXERCISE",
+        "phrase": "A tea and an ice cream, please.",
+        "words": [
+          "té",
+          "favor",
+          "helado",
+          "un",
+          "y",
+          "por",
+          "Un",
+          "con hielo"
+        ],
+        "answer": [
+          "Un",
+          "té",
+          "y",
+          "un",
+          "helado",
+          "por",
+          "favor"
+        ]
+      },
+      {
+        "type": "word_bank",
+        "prompt": "Write this in Spanish",
+        "tag": "HARD EXERCISE",
+        "phrase": "I want a glass of water, please.",
+        "words": [
+          "agua",
+          "vaso",
+          "un",
+          "por",
+          "Quiero",
+          "favor",
+          "helado",
+          "de"
+        ],
+        "answer": [
+          "Quiero",
+          "un",
+          "vaso",
+          "de",
+          "agua",
+          "por",
+          "favor"
+        ]
+      }
+    ]
+  },
+  "artwork": {
+    "perro": "https://d2pur3iezf4d1j.cloudfront.net/images/d8adb479aed80e6420f566afea110eb1",
+    "casa": "https://d2pur3iezf4d1j.cloudfront.net/images/6d966ea1c0962c0b81bf2f1f82fc18fd",
+    "azul": "https://d2pur3iezf4d1j.cloudfront.net/images/fc102c2c6544341f2b61659af8acb4c2",
+    "té": "https://d2pur3iezf4d1j.cloudfront.net/images/18a521f1507cb86689faa5b2e8277703",
+    "taco": "https://d2pur3iezf4d1j.cloudfront.net/images/31a1f663c9536e3ed265d470dd43b15a",
+    "café": "https://d2pur3iezf4d1j.cloudfront.net/images/6fd84b8a838c43c4a84b44b08b10177e",
+    "un sándwich": "https://d2pur3iezf4d1j.cloudfront.net/images/d56b5cfc3455ffcdac9b1207d34cdeaa",
+    "helado": "https://d2pur3iezf4d1j.cloudfront.net/images/2ea68be853de9fcec50695990b5d5613"
+  }
+}

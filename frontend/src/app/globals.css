@@ -141,6 +141,11 @@ h1,h2,h3{letter-spacing:-.035em}
 .lesson-chat img{width:65px;height:65px;object-fit:contain;flex:none}
 .chat-response{justify-content:flex-end}
 .chat-response>span{border:2px solid var(--line);border-radius:16px;padding:16px 24px;min-width:80px;font-size:21px;text-align:center}
+.fill-scene{display:flex;align-items:center;justify-content:center;gap:28px;margin:30px 0 55px}
+.fill-scene>img{width:245px;max-width:45%;height:170px;object-fit:contain}
+.scene-sentence{font-size:23px;line-height:2;max-width:360px}
+.scene-sentence>span{display:inline-block;min-width:85px;color:#4cc4f7;border-bottom:2px solid var(--line);text-align:center}
+@media(max-width:700px){.fill-scene{gap:15px;margin:15px 0 30px}.fill-scene>img{height:125px;width:180px}.scene-sentence{font-size:18px}.fill-options{gap:8px;flex-wrap:wrap}.fill-options button{padding:0 15px}}
 @media(max-width:700px){.choice-artwork{width:100px;height:100px}.lesson-chat img{width:48px;height:48px}.lesson-chat{gap:16px}.chat-response>span{font-size:17px}}
 .meaning-choices{display:flex;flex-direction:column;gap:12px;max-width:650px}
 .meaning-choices button{height:68px;display:flex;align-items:center;gap:18px;padding:0 20px;border:2px solid var(--line);border-bottom-width:5px;border-radius:16px;background:transparent;color:var(--text);font-size:21px;font-weight:700;text-align:left}

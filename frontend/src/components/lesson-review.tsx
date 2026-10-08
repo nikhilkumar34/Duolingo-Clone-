@@ -14,13 +14,14 @@ function answerText(answer: unknown): string {
 function reviewTitle(item: ReviewItem) {
   if (item.type === "word_bank" || item.type === "type") return /Spanish/i.test(item.prompt) ? "Write in Spanish:" : "Write in English:";
   if (item.type === "match") return "Select the matching pairs";
-  if (item.type === "fill_blank") return "Complete the translation";
+  if (item.type === "fill_blank") return item.prompt;
   if (item.payload.mode === "chat") return "Complete the chat";
   return item.payload.mode === "meaning" ? "Select the correct meaning" : "Choose the correct picture";
 }
 
 function reviewPrompt(item: ReviewItem) {
   if (item.type === "match") return (item.payload.pairs as [string, string][]).map(([word]) => word).join(" · ");
+  if (item.type === "fill_blank") return `${String(item.payload.before || "")}____${String(item.payload.after || "")}`;
   return String(item.payload.phrase || item.payload.translation || item.prompt);
 }
 
