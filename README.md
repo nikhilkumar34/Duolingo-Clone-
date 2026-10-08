@@ -116,11 +116,11 @@ The backend tests use a separate temporary database and cover a complete lesson,
 
 ## Deploy
 
-The included [`backend/railway.json`](backend/railway.json) starts FastAPI on Railway's assigned port and checks `/api/health`. Publish this repository to GitHub first, then:
+Publish this repository to GitHub first, then:
 
-1. Create a Railway service from the repository. Set its root directory to `/backend` and its config file path to `/backend/railway.json`. Generate a public domain.
+1. Create a Railway service from the repository. In service settings set its root directory to `/backend`, start command to `uvicorn app.main:app --host 0.0.0.0 --port $PORT`, and healthcheck path to `/api/health`. Generate a public domain targeting port `8080`, and set `PORT=8080`.
 2. Attach a Railway volume at `/data`. Set `DUO_DB_PATH=/data/duolingo.db` so XP, streaks, hearts, and completed lessons survive restarts. Set `FRONTEND_ORIGINS` to the final Vercel origin (or a comma-separated list of allowed origins).
 3. Import the same repository into Vercel with root directory `frontend`. Set `NEXT_PUBLIC_API_URL` to the public Railway URL, including `https://` but no trailing slash. Redeploy if this variable changes because Next.js embeds public variables at build time.
 4. Open the Vercel URL, complete a lesson, refresh, and verify the new XP and path state still appear. Submit both the public GitHub URL and the Vercel URL.
 
-Railway [monorepo](https://docs.railway.com/deployments/monorepo) and [volume](https://docs.railway.com/volumes/reference) guides explain the root directory and persistent mount; Vercel documents [Next.js deployment](https://vercel.com/docs/frameworks/full-stack/nextjs) and [public environment variables](https://vercel.com/docs/environment-variables/framework-environment-variables).
+Railway [monorepo](https://docs.railway.com/deployments/monorepo) and [volume](https://docs.railway.com/volumes/reference) guides explain the root directory and persistent mount; Vercel documents [Next.js deployment](https://vercel.com/docs/frameworks/full-stack/nextjs) and [public environment variables](https://vercel.com/docs/environment-variables/framework-environment-variables). Railway's current UI no longer enables config-as-code for new services, so these settings are entered in the service dashboard.
