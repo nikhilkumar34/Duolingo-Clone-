@@ -342,6 +342,30 @@ export default function HomePage() {
   const [loading, setLoading] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [welcome, setWelcome] = useState(false);
+  const popoverCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  function keepPopoverOpen() {
+    if (popoverCloseTimer.current !== null) clearTimeout(popoverCloseTimer.current);
+    popoverCloseTimer.current = null;
+  }
+  function closePopoverSoon(kind: Popover) {
+    keepPopoverOpen();
+    // Allow crossing the small gap from the counter into its panel.
+    popoverCloseTimer.current = setTimeout(() => {
+      setPopover(current => current === kind ? null : current);
+      popoverCloseTimer.current = null;
+    }, 200);
+  }
+  function statTrigger(kind: Exclude<Popover, "more" | null>, label: string) {
+    const open = () => { keepPopoverOpen(); setPopover(kind); };
+    return {
+      "aria-label": label, "aria-expanded": popover === kind, "aria-controls": `stat-panel-${kind}`,
+      onPointerEnter: (event: React.PointerEvent<HTMLButtonElement>) => { if (event.pointerType !== "touch") open(); },
+      onPointerLeave: (event: React.PointerEvent<HTMLButtonElement>) => { if (event.pointerType !== "touch") closePopoverSoon(kind); },
+      onFocus: (event: React.FocusEvent<HTMLButtonElement>) => { if (event.currentTarget.matches(":focus-visible")) open(); },
+      onClick: open,
+    };
+  }
+  useEffect(() => () => { if (popoverCloseTimer.current !== null) clearTimeout(popoverCloseTimer.current); }, []);
   const reload = useCallback(async () => { try { setData(await api<Bootstrap>("/api/bootstrap")); if (firstVisitWelcome()) setWelcome(true); } catch (err) { setToast(err instanceof Error ? err.message : "Could not connect to API"); } }, []);
   useEffect(() => { void reload(); }, [reload]);
   useEffect(() => { if (!toast) return; const timeout = window.setTimeout(() => setToast(""), 4000); return () => window.clearTimeout(timeout); }, [toast]);
@@ -367,16 +391,16 @@ export default function HomePage() {
     else { setResult(null); void reload(); }
   }
   if (!data) return <div className="loading-screen"><MascotAnimation name="flying-bird" className="loading-bird" label="Duo flying while your learning path loads" /><h1>Loading your learning path…</h1><p>Preparing your next adventure.</p>{toast && <><button onClick={() => void reload()}>RETRY</button><span>{toast}</span></>}</div>;
-  return <><div className="app-shell"><aside className={`sidebar ${menuOpen ? "open" : ""}`}><button className="wordmark" onClick={() => setPage("learn")}>duolingo</button><nav>{nav.map(item => <button key={item.id} className={`nav-item ${page === item.id ? "active" : ""}`} onClick={() => { setPage(item.id); setMenuOpen(false); setPopover(null); }}><NavIcon page={item.id} />{item.title}</button>)}<div className="more-wrap"><button className={`nav-item ${popover === "more" ? "active" : ""}`} onClick={() => setPopover(popover === "more" ? null : "more")}><NavIcon page="more" />MORE</button>{popover === "more" && <div className="more-menu"><button onClick={() => showToast("Duolingo English Test is coming soon")}>DUOLINGO ENGLISH TEST</button><button onClick={() => showToast("Podcast is coming soon")}>PODCAST</button><hr /><button onClick={() => showToast("Settings are coming soon")}>SETTINGS</button><button onClick={() => showToast("Help is coming soon")}>HELP</button><button onClick={() => showToast("Progress is saved in this browser")}>LOG OUT</button></div>}</div></nav></aside><div className="main-shell"><header className="topbar">
+  return <><div className="app-shell"><aside className={`sidebar ${menuOpen ? "open" : ""}`}><button className="wordmark" onClick={() => setPage("learn")}>duolingo</button><nav>{nav.map(item => <button key={item.id} className={`nav-item ${page === item.id ? "active" : ""}`} onClick={() => { setPage(item.id); setMenuOpen(false); setPopover(null); }}><NavIcon page={item.id} />{item.title}</button>)}<div className="more-wrap"><button className={`nav-item ${popover === "more" ? "active" : ""}`} onClick={() => setPopover(popover === "more" ? null : "more")}><NavIcon page="more" />MORE</button>{popover === "more" && <div className="more-menu"><button onClick={() => showToast("Duolingo English Test is coming soon")}>DUOLINGO ENGLISH TEST</button><button onClick={() => showToast("Podcast is coming soon")}>PODCAST</button><hr /><button onClick={() => showToast("Settings are coming soon")}>SETTINGS</button><button onClick={() => showToast("Help is coming soon")}>HELP</button><button onClick={() => showToast("Progress is saved in this browser")}>LOG OUT</button></div>}</div></nav></aside><div className="main-shell"><header className="topbar" onKeyDown={event => { if (event.key === "Escape") { keepPopoverOpen(); setPopover(null); } }} onBlur={event => { if (!event.currentTarget.contains(event.relatedTarget)) { keepPopoverOpen(); setPopover(current => current === "more" ? current : null); } }}>
   <button className="mobile-menu" onClick={() => setMenuOpen(!menuOpen)} aria-label="Open menu"><Menu /></button>
   <div className="topbar-items">
-    <button className={popover === "language" ? "selected" : ""} onClick={() => setPopover(popover === "language" ? null : "language")}><span className="spain-flag" /> 1</button>
-    <button className={popover === "streak" ? "selected" : ""} onClick={() => setPopover(popover === "streak" ? null : "streak")}><Flame className="fire" fill="currentColor" /> {data.user.streak}</button>
-    <button className={popover === "gems" ? "selected" : ""} onClick={() => setPopover(popover === "gems" ? null : "gems")}><span className="gem-icon" /> {data.user.gems}</button>
-    <button className={popover === "hearts" ? "selected" : ""} onClick={() => setPopover(popover === "hearts" ? null : "hearts")}><Heart className="hearts" fill="currentColor" /> {data.user.hearts}</button>
+    <button className={popover === "language" ? "selected" : ""} {...statTrigger("language", "Spanish course")}><span className="spain-flag" /> 1</button>
+    <button className={popover === "streak" ? "selected" : ""} {...statTrigger("streak", "Streak details")}><Flame className="fire" fill="currentColor" /> {data.user.streak}</button>
+    <button className={popover === "gems" ? "selected" : ""} {...statTrigger("gems", "Gem balance")}><span className="gem-icon" /> {data.user.gems}</button>
+    <button className={popover === "hearts" ? "selected" : ""} {...statTrigger("hearts", "Hearts details")}><Heart className="hearts" fill="currentColor" /> {data.user.hearts}</button>
   </div>
-  {popover && popover !== "more" && <div className={`stat-popover ${popover}`}>
-    <button className="popover-close" onClick={() => setPopover(null)}><X size={18} /></button>
+  {popover && popover !== "more" && <div className={`stat-popover ${popover}`} id={`stat-panel-${popover}`} onPointerEnter={keepPopoverOpen} onPointerLeave={event => { if (event.pointerType !== "touch") closePopoverSoon(popover); }}>
+    <button className="popover-close" aria-label="Close details" onClick={() => { keepPopoverOpen(); setPopover(null); }}><X size={18} /></button>
     {popover === "language" ? <><small>MY COURSES</small><h3>🇪🇸　Spanish</h3><button onClick={() => showToast("More courses are coming soon")}>＋　Add a new course</button></>
     : popover === "streak" ? <><div className="streak-popover-hero"><div><h2>{data.user.streak} day streak</h2><p>You have earned your longest streak ever!</p></div><Flame fill="currentColor" size={72} /></div><StreakCalendar streak={data.user.streak} /><div className="friend-streak"><span>🔥</span><div><strong>Friend Streaks</strong><p>0 active Friend Streaks</p><Button variant="white" onClick={() => showToast("Friend Streaks are coming soon")}>VIEW LIST</Button></div></div><div className="streak-society"><LockKeyhole /><div><strong>Streak Society</strong><p>Reach a 7 day streak to join the Streak Society and earn exclusive rewards.</p></div></div><Button variant="blue" onClick={() => { setPopover(null); setPage("profile"); }}>VIEW MORE</Button></>
     : popover === "gems" ? <><h2>💎 Gems</h2><p>You have {data.user.gems} gems</p><button onClick={() => { setPopover(null); setPage("shop"); }}>GO TO SHOP</button></>
