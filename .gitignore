@@ -1,6 +1,7 @@
 frontend/node_modules/
 frontend/.next/
 frontend/.env.local
+frontend/.vercel/
 qa-*.png
 frontend/qa-*.png
 frontend/tsconfig.tsbuildinfo

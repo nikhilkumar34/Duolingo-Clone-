@@ -114,13 +114,21 @@ The backend tests use a separate temporary database and cover a complete lesson,
 - The leaderboard contains seeded peers and sorts the learner by current XP. It is a demo league rather than live multiplayer ranking.
 - The interface is an original implementation inspired by the provided screenshots. Decorative graphics use CSS and emoji rather than copied Duolingo assets.
 
+## Live demo
+
+- Frontend: https://duolingo-clone-nikhil.vercel.app
+- Backend health check: https://duolingo-clone-production-e382.up.railway.app/api/health
+- Source: https://github.com/nikhilkumar34/Duolingo-Clone-
+
+The public frontend runs on Vercel and calls the Railway API. Railway stores the SQLite database on a `/data` volume. The default demo learner is shared by visitors, so its XP, streak, and path progress may change as people use the site.
+
 ## Deploy
 
 Publish this repository to GitHub first, then:
 
 1. Create a Railway service from the repository. In service settings set its root directory to `/backend`, start command to `uvicorn app.main:app --host 0.0.0.0 --port $PORT`, and healthcheck path to `/api/health`. Generate a public domain targeting port `8080`, and set `PORT=8080`.
 2. Attach a Railway volume at `/data`. Set `DUO_DB_PATH=/data/duolingo.db` so XP, streaks, hearts, and completed lessons survive restarts. Set `FRONTEND_ORIGINS` to the final Vercel origin (or a comma-separated list of allowed origins).
-3. Import the same repository into Vercel with root directory `frontend`. Set `NEXT_PUBLIC_API_URL` to the public Railway URL, including `https://` but no trailing slash. Redeploy if this variable changes because Next.js embeds public variables at build time.
+3. Deploy `frontend/` to Vercel as a Next.js project. Set `NEXT_PUBLIC_API_URL` to the public Railway URL, including `https://` but no trailing slash. This demo was deployed with the Vercel CLI because the GitHub app connection was not configured. From `frontend/`, run `vercel deploy --prod` after linking the project. Redeploy if the variable changes because Next.js embeds public variables at build time.
 4. Open the Vercel URL, complete a lesson, refresh, and verify the new XP and path state still appear. Submit both the public GitHub URL and the Vercel URL.
 
 Railway [monorepo](https://docs.railway.com/deployments/monorepo) and [volume](https://docs.railway.com/volumes/reference) guides explain the root directory and persistent mount; Vercel documents [Next.js deployment](https://vercel.com/docs/frameworks/full-stack/nextjs) and [public environment variables](https://vercel.com/docs/environment-variables/framework-environment-variables). Railway's current UI no longer enables config-as-code for new services, so these settings are entered in the service dashboard.
