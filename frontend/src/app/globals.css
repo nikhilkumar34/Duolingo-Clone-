@@ -394,10 +394,10 @@ body:has(.lesson-overlay),body:has(.ceremony-overlay){overflow:hidden}
 .blocking-loader{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px}
 .blocking-loader .starting-bird{width:min(300px,65vw);height:min(300px,45dvh);aspect-ratio:auto}
 .welcome-card .welcome-mascot{width:min(230px,100%);height:min(230px,30dvh);aspect-ratio:auto;margin:0 auto 22px}
-.combo-interlude .challenge-mascot{width:280px;height:280px;aspect-ratio:auto}
+.combo-interlude .challenge-mascot{width:420px;height:420px;aspect-ratio:auto;max-height:calc(100dvh - 270px)}
 .hard-interlude .challenge-mascot{align-self:center}
-@media(max-width:700px){.combo-interlude{flex-direction:column;gap:12px;padding:16px}.combo-interlude .challenge-mascot{width:210px;height:180px}.combo-interlude .combo-speech{max-width:100%;font-size:17px}.hard-interlude .combo-speech{margin-bottom:0;align-self:center}}
-@media(max-height:600px){.welcome-card{padding-top:18px;padding-bottom:20px}.welcome-card .welcome-mascot{height:110px;margin-bottom:12px}.welcome-card p{margin-bottom:18px}.combo-interlude .challenge-mascot{height:200px}}
+@media(max-width:700px){.combo-interlude{flex-direction:column;gap:12px;padding:16px}.combo-interlude .challenge-mascot{width:min(315px,100%);height:270px;max-height:max(100px,calc(100dvh - 370px))}.combo-interlude .combo-speech{max-width:100%;font-size:17px}.hard-interlude .combo-speech{margin-bottom:0;align-self:center}}
+@media(max-height:600px){.welcome-card{padding-top:18px;padding-bottom:20px}.welcome-card .welcome-mascot{height:110px;margin-bottom:12px}.welcome-card p{margin-bottom:18px}.combo-interlude .challenge-mascot{height:300px}}
 
 @media(max-width:700px){.combo-interlude .combo-speech:before{left:calc(50% - 12px);top:-13px;transform:rotate(135deg)}}
 
@@ -411,6 +411,8 @@ body:has(.lesson-overlay),body:has(.ceremony-overlay){overflow:hidden}
 .super-card h3,.super-card p{max-width:calc(100% - 115px)}
 .ad-card .ad-mascot{width:230px;height:150px;aspect-ratio:auto;margin:0 auto 4px}
 .quest-hero .quest-mascot{width:190px;height:190px;aspect-ratio:auto;margin:-22px -10px 0 0}
-.ceremony-celebration .ceremony-bird{width:260px;height:240px;aspect-ratio:auto;position:relative;z-index:2}
 @media(min-width:1121px) and (max-width:1550px){.super-card .promo-mascot{width:135px;height:135px;right:7px}.super-card h3,.super-card p{max-width:calc(100% - 85px)}}
-@media(max-width:700px){.path-stop .path-mascot{width:120px;height:120px}.quest-hero .quest-mascot{width:120px;height:140px;margin:0;align-self:center}.quest-hero{height:auto;min-height:250px;padding:28px 20px;gap:8px}.quest-hero>div:first-child{min-width:0}.ceremony-celebration .ceremony-bird{width:200px;height:185px}}
+@media(max-width:700px){.path-stop .path-mascot{width:120px;height:120px}.quest-hero .quest-mascot{width:120px;height:140px;margin:0;align-self:center}.quest-hero{height:auto;min-height:250px;padding:28px 20px;gap:8px}.quest-hero>div:first-child{min-width:0}}
+
+/* Enlarge the supplied bird inside its transparent canvas, retaining clearance. */
+.path-flying .mascot-canvas,.ad-card .ad-mascot .mascot-canvas{transform:translateY(20%) scale(2.5);transform-origin:center}
