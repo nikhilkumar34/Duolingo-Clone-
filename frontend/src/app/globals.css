@@ -415,4 +415,4 @@ body:has(.lesson-overlay),body:has(.ceremony-overlay){overflow:hidden}
 @media(max-width:700px){.path-stop .path-mascot{width:120px;height:120px}.quest-hero .quest-mascot{width:120px;height:140px;margin:0;align-self:center}.quest-hero{height:auto;min-height:250px;padding:28px 20px;gap:8px}.quest-hero>div:first-child{min-width:0}}
 
 /* Enlarge the supplied bird inside its transparent canvas, retaining clearance. */
-.path-flying .mascot-canvas,.ad-card .ad-mascot .mascot-canvas{transform:translateY(20%) scale(2.5);transform-origin:center}
+.path-flying .mascot-canvas,.ad-card .ad-mascot .mascot-canvas{transform:translateY(16%) scale(2);transform-origin:center}
