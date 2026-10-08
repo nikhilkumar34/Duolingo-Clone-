@@ -499,6 +499,45 @@ def sync_first_lesson_reference(connection: sqlite3.Connection) -> None:
     connection.execute("UPDATE exercises SET is_active = 0 WHERE lesson_id = 1 AND sort_order > 12")
 
 
+def sync_second_lesson_reference(connection: sqlite3.Connection) -> None:
+    """Keep the observed Unit 1, Lesson 2 sequence in existing databases."""
+    def picture(word: str, choices: list[tuple[str, str]], answer: str):
+        return ("choice", f"Which one of these is “{word}”?",
+                {"choices": [{"label": label, "emoji": emoji} for label, emoji in choices], "tag": "NEW WORD"},
+                answer, f"{answer} means {word}.")
+
+    def meaning(word: str, choices: list[str], answer: str):
+        return ("choice", "Select the correct meaning",
+                {"mode": "meaning", "phrase": word, "choices": [{"label": choice} for choice in choices]},
+                answer, f"{answer} means {word}.")
+
+    first_pairs = [["mom", "mamá"], ["dog", "perro"], ["dad", "papá"], ["book", "libro"], ["house", "casa"]]
+    second_pairs = [["cat", "gato"], ["suitcase", "maleta"], ["water", "agua"], ["house", "casa"], ["milk", "leche"]]
+    final_pairs = [["my house", "mi casa"], ["my dog", "mi perro"], ["my mom", "mi mamá"], ["my cat", "mi gato"], ["my dad", "mi papá"]]
+    rows = [
+        picture("book", [("libro", "📖"), ("perro", "🐕"), ("agua", "💧")], "libro"),
+        picture("house", [("libro", "📖"), ("casa", "🏠"), ("perro", "🐕")], "casa"),
+        picture("suitcase", [("casa", "🏠"), ("leche", "🥛"), ("maleta", "🧳")], "maleta"),
+        ("match", "Select the matching pairs", {"pairs": first_pairs, "right_order": ["casa", "libro", "perro", "papá", "mamá"]}, first_pairs, "Correct!"),
+        ("match", "Select the matching pairs", {"pairs": second_pairs, "right_order": ["gato", "maleta", "leche", "agua", "casa"]}, second_pairs, "Correct!"),
+        ("word_bank", "Write this in English", {"phrase": "Mi maleta.", "words": ["suitcase", "cat", "my", "house"]}, ["my", "suitcase"], "Mi maleta means my suitcase."),
+        meaning("suitcase", ["casa", "maleta", "libro"], "maleta"),
+        ("word_bank", "Write this in English", {"phrase": "Mi casa.", "words": ["book", "house", "my", "dog"]}, ["my", "house"], "Mi casa means my house."),
+        meaning("house", ["maleta", "casa", "libro"], "casa"),
+        ("word_bank", "Write this in English", {"phrase": "Mi libro.", "words": ["cat", "my", "book", "dog"]}, ["my", "book"], "Mi libro means my book."),
+        meaning("book", ["libro", "perro", "agua"], "libro"),
+        ("match", "Select the matching pairs", {"pairs": final_pairs, "right_order": ["mi casa", "mi perro", "mi mamá", "mi gato", "mi papá"]}, final_pairs, "Nice!"),
+    ]
+    rows[0][2]["reference_lesson"] = True
+    for order, (kind, prompt, payload, expected, explanation) in enumerate(rows, 1):
+        connection.execute(
+            "UPDATE exercises SET type = ?, prompt = ?, payload_json = ?, answer_json = ?, explanation = ?, is_active = 1 "
+            "WHERE lesson_id = 2 AND sort_order = ?",
+            (kind, prompt, json.dumps(payload, ensure_ascii=False), json.dumps(expected, ensure_ascii=False), explanation, order),
+        )
+    connection.execute("UPDATE exercises SET is_active = 0 WHERE lesson_id = 2 AND sort_order > 12")
+
+
 def migrate_schema(connection: sqlite3.Connection) -> None:
     if "is_active" not in {row[1] for row in connection.execute("PRAGMA table_info(exercises)")}:
         connection.execute("ALTER TABLE exercises ADD COLUMN is_active INTEGER NOT NULL DEFAULT 1")
@@ -513,6 +552,7 @@ with db() as connection:
     seed(connection)
     sync_reference_path(connection)
     sync_first_lesson_reference(connection)
+    sync_second_lesson_reference(connection)
 
 
 def learner(connection: sqlite3.Connection, client_id: str) -> int:

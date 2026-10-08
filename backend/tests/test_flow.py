@@ -19,6 +19,7 @@ class LessonFlowTest(unittest.TestCase):
             main.seed(connection)
             main.sync_reference_path(connection)
             main.sync_first_lesson_reference(connection)
+            main.sync_second_lesson_reference(connection)
 
     def tearDown(self):
         main.DB_PATH = self.original_path
@@ -61,6 +62,21 @@ class LessonFlowTest(unittest.TestCase):
         self.assertEqual(updated["user"]["daily_xp"], initial["user"]["daily_xp"] + 20)
         self.assertEqual(updated["units"][0]["skills"][0]["state"], "completed")
         self.assertEqual(updated["units"][0]["skills"][1]["state"], "available")
+
+    def test_second_lesson_matches_observed_sequence(self):
+        main.bootstrap(x_learner_id=self.learner_id)
+        with main.db() as connection:
+            user_id = connection.execute("SELECT id FROM users WHERE client_id = ?", (self.learner_id,)).fetchone()[0]
+            connection.execute("INSERT INTO skill_progress VALUES (?, 1, 1, ?)", (user_id, main.now().isoformat()))
+        started = main.start_lesson(2, x_learner_id=self.learner_id)
+        self.assertEqual(len(started["exercises"]), 12)
+        self.assertEqual([exercise["prompt"] for exercise in started["exercises"][:5]], [
+            "Which one of these is “book”?", "Which one of these is “house”?",
+            "Which one of these is “suitcase”?", "Select the matching pairs",
+            "Select the matching pairs",
+        ])
+        self.assertEqual(started["exercises"][5]["payload"]["phrase"], "Mi maleta.")
+        self.assertEqual(started["exercises"][-1]["payload"]["pairs"][0], ["my house", "mi casa"])
 
     def test_path_lessons_unlock_in_display_order(self):
         for lesson_id, next_skill_id in [(1, 2), (2, 22), (22, 23), (23, 41), (41, 42)]:
