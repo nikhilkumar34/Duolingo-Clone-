@@ -330,7 +330,6 @@ body:has(.lesson-overlay),body:has(.ceremony-overlay){overflow:hidden}
 
 /* Keep all four assignment progress counters visible without covering the unit card. */
 .topbar-items{gap:18px}
-.topbar-items .xp-stat,.topbar-items .xp-stat svg{color:#ffc800}
 .topbar-items button:nth-child(3){color:#4cc4f7}
 .topbar-items button:nth-child(4){color:var(--red)}
-@media(max-width:700px){.topbar-items{gap:2px}.topbar-items .xp-stat svg{width:19px;height:19px}.topbar-items .xp-stat{font-size:13px}}
+@media(max-width:700px){.topbar-items{gap:2px}}
